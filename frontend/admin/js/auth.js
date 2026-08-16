@@ -63,19 +63,17 @@ async function changePassword(newPassword) {
     return true;
 }
 
-// Execute checkAuth immediately unless it's a page that doesn't need auth (none in admin)
-document.addEventListener("DOMContentLoaded", () => {
-    checkAuth();
-    
-    // Add event listener to logout buttons if they exist
-    const logoutBtn = document.getElementById('btn-logout');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            signOut();
-        });
-    }
-});
+// Execute checkAuth immediately
+checkAuth();
+
+// Add event listener to logout buttons if they exist
+const logoutBtn = document.getElementById('btn-logout');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        signOut();
+    });
+}
 
 // Export supabase to be used in other files like dashboard.js
 window.supabaseClient = supabase;
