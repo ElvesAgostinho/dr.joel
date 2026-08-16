@@ -34,6 +34,7 @@
             margin-top: 20px;
         }
     </style>
+    <script src="js/auth.js"></script>
 </head>
 <body>
     <div class="login-container">
@@ -51,13 +52,7 @@
                 <button type="submit" class="btn btn-primary login-btn">Entrar</button>
             </form>
         </div>
-    </div>
-
-    <!-- Supabase JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Auth Logic -->
-    <script src="js/auth.js"></script>
-    <script>
+    </div><script>
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;

@@ -6,6 +6,7 @@
     <title>Mudar Senha - M&J Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/admin.css">
+    <script src="js/auth.js"></script>
 </head>
 <body>
     <div class="admin-layout">
@@ -44,12 +45,7 @@
                 </form>
             </div>
         </main>
-    </div>
-
-    <!-- Supabase JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/auth.js"></script>
-    <script>
+    </div><script>
         document.getElementById('password-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const newPassword = document.getElementById('new-password').value;
