@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Sobre Nós - Mário & Joel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">M&J Admin</div>
+            <nav class="admin-nav">
+                <a href="index.html">Publicações</a>
+                <a href="equipa.html">Equipa</a>
+                <a href="artes.html">Arte</a>
+                <a href="gestao-expertise.html">Áreas de Prática</a>
+                <a href="gestao-sobrenos.html" class="active">Sobre Nós</a>
+                <a href="../index.html">Ver Site</a>
+            
+                <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                    <a href="mudar-senha.html">Mudar Senha</a>
+                    <a href="#" id="btn-logout">Terminar Sessão</a>
+                </div>
+            </nav>
+        </aside>
+        
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1 id="editor-title">Editar Página Institucional</h1>
+                <a href="gestao-sobrenos.html" class="btn btn-secondary">Cancelar</a>
+            </div>
+
+            <div class="card">
+                <form id="sobrenos-form" onsubmit="event.preventDefault();">
+                    <input type="hidden" id="sobrenos-id">
+                    
+                    <div class="form-group">
+                        <label for="sobrenos-title">Título da Página</label>
+                        <input type="text" id="sobrenos-title" class="form-control" required placeholder="Ex: A Firma">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sobrenos-content">Conteúdo (Suporta HTML básico para formatação)</label>
+                        <div id="quill-editor" style="height: 300px; background: white;"></div>
+                    <input type="hidden" id="sobrenos-content">
+                    </div>
+
+                    <button type="button" id="btn-save-sobrenos" class="btn btn-primary" style="margin-top: 20px;">Gravar Alterações</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="js/mockDB.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageId = urlParams.get('id');
+            
+            if (pageId) {
+                const page = MockDB.getSobreNosPage(pageId);
+                if (page) {
+                    document.getElementById('sobrenos-id').value = page.id;
+                    document.getElementById('sobrenos-title').value = page.title;
+                    document.getElementById('sobrenos-content').value = page.content;
+                } else {
+                    alert("Página não encontrada!");
+                    window.location.href = 'gestao-sobrenos.html';
+                }
+            } else {
+                alert("Nenhuma página selecionada.");
+                window.location.href = 'gestao-sobrenos.html';
+            }
+
+            document.getElementById('btn-save-sobrenos').addEventListener('click', () => {
+                const title = document.getElementById('sobrenos-title').value;
+                const content = document.getElementById('sobrenos-content').value;
+
+                if (!title || !content) {
+                    alert('Por favor, preencha todos os campos!');
+                    return;
+                }
+
+                const pageData = {
+                    id: document.getElementById('sobrenos-id').value,
+                    title: title,
+                    content: content
+                };
+
+                MockDB.saveSobreNosPage(pageData);
+                alert('Página guardada com sucesso!');
+                window.location.href = 'gestao-sobrenos.html';
+            });
+        });
+    </script>
+
+    <script>
+        var quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    ['link', 'clean']
+                ]
+            }
+        });
+    </script>
+
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mudar Senha - M&J Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">M&J Admin</div>
+            <nav class="admin-nav">
+                <a href="index.html">Publicações</a>
+                <a href="equipa.html">Equipa</a>
+                <a href="artes.html">Arte</a>
+                <a href="gestao-expertise.html">Áreas de Prática</a>
+                <a href="gestao-sobrenos.html">Sobre Nós</a>
+                <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                    <a href="mudar-senha.html" class="active">Mudar Senha</a>
+                    <a href="#" id="btn-logout">Terminar Sessão</a>
+                </div>
+                <a href="../index.html" style="margin-top: auto;">Ver Site</a>
+            </nav>
+        </aside>
+        
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1>Mudar Senha do Administrador</h1>
+            </div>
+
+            <div class="card" style="max-width: 500px;">
+                <form id="password-form">
+                    <div class="form-group">
+                        <label for="new-password">Nova Palavra-passe</label>
+                        <input type="password" id="new-password" class="form-control" required minlength="6" placeholder="Nova palavra-passe">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password">Confirmar Palavra-passe</label>
+                        <input type="password" id="confirm-password" class="form-control" required minlength="6" placeholder="Confirme a nova palavra-passe">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Atualizar Senha</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert("As palavras-passe não coincidem!");
+                return;
+            }
+
+            const btn = e.target.querySelector('button');
+            const originalText = btn.textContent;
+            btn.textContent = "A atualizar...";
+            btn.disabled = true;
+
+            const success = await changePassword(newPassword);
+            
+            if (success) {
+                e.target.reset();
+            }
+
+            btn.textContent = originalText;
+            btn.disabled = false;
+        });
+    </script>
+</body>
+</html>

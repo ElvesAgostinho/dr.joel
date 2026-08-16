@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Arte - Mário & Joel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">M&J Admin</div>
+            <nav class="admin-nav">
+                <a href="index.html">Publicações</a>
+                <a href="equipa.html">Equipa</a>
+                <a href="artes.html" class="active">Arte</a>
+                <a href="gestao-expertise.html">Áreas de Prática</a>
+                <a href="gestao-sobrenos.html">Sobre Nós</a>
+                <a href="../index.html">Ver Site</a>
+            
+                <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                    <a href="mudar-senha.html">Mudar Senha</a>
+                    <a href="#" id="btn-logout">Terminar Sessão</a>
+                </div>
+            </nav>
+        </aside>
+        
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1 id="editor-title">Nova Peça de Arte</h1>
+                <a href="artes.html" class="btn btn-secondary">Cancelar</a>
+            </div>
+
+            <div class="card">
+                <form id="arte-form" onsubmit="event.preventDefault();">
+                    <input type="hidden" id="arte-id">
+                    
+                    <div class="form-group">
+                        <label for="arte-title">Título da Peça</label>
+                        <input type="text" id="arte-title" class="form-control" required placeholder="Ex: Pensador de Cokwe">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="arte-image">Caminho da Imagem</label>
+                        <input type="file" id="arte-image-file" class="form-control" accept="image/*,video/*" required>
+                    <input type="hidden" id="arte-image">
+                        <small style="color: #666;">Coloque o caminho da imagem relativo à pasta frontend.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="arte-desc">Descrição / Detalhes</label>
+                        <div id="quill-editor" style="height: 300px; background: white;"></div>
+                    <input type="hidden" id="arte-desc">
+                    </div>
+
+                    <button type="button" id="btn-save-arte" class="btn btn-primary" style="margin-top: 20px;">Gravar Peça de Arte</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="js/mockDB.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+        const imageFile = document.getElementById('arte-image-file');
+        const imageHidden = document.getElementById('arte-image');
+        
+        imageFile.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imageHidden.value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const arteId = urlParams.get('id');
+            
+            if (arteId) {
+                document.getElementById('editor-title').textContent = 'Editar Peça de Arte';
+                const arte = MockDB.getArte(arteId);
+                if (arte) {
+                    document.getElementById('arte-id').value = arte.id;
+                    document.getElementById('arte-title').value = arte.title;
+                    document.getElementById('arte-image').value = arte.image;
+                    quill.root.innerHTML = arte.description || '';
+                }
+            }
+
+            document.getElementById('btn-save-arte').addEventListener('click', () => {
+                const title = document.getElementById('arte-title').value;
+                const image = document.getElementById('arte-image').value;
+                const description = quill.root.innerHTML;
+
+                if (!title || !image || !description) {
+                    alert('Por favor, preencha todos os campos!');
+                    return;
+                }
+
+                const arteData = {
+                    id: document.getElementById('arte-id').value || null,
+                    title: title,
+                    image: image,
+                    description: description
+                };
+
+                MockDB.saveArte(arteData);
+                alert('Peça de arte guardada com sucesso!');
+                window.location.href = 'artes.html';
+            });
+        });
+    </script>
+
+    <script>
+        var quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    ['link', 'clean']
+                ]
+            }
+        });
+    </script>
+
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+</body>
+
+</html>

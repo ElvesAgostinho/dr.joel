@@ -1,0 +1,217 @@
+/* admin.css */
+:root {
+    --admin-bg: #F8F9FA;
+    --admin-surface: #ffffff;
+    --admin-text: #2D3748;
+    --admin-primary: #1A2A3A;
+    --admin-accent: #4A6572;
+    --admin-accent-hover: #364A54;
+    --admin-border: #e5e7eb;
+    --admin-danger: #ef4444;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--admin-bg);
+    color: var(--admin-text);
+}
+
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: 250px;
+    background-color: var(--admin-primary);
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-logo {
+    padding: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-family: 'Cinzel', serif;
+}
+
+.admin-nav {
+    flex: 1;
+    padding: 20px 0;
+}
+
+.admin-nav a {
+    display: block;
+    padding: 15px 20px;
+    color: #9ca3af;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.admin-nav a:hover, .admin-nav a.active {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+    border-left: 4px solid var(--admin-accent);
+}
+
+.admin-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.admin-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.btn-primary {
+    background-color: var(--admin-accent);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--admin-accent-hover);
+    box-shadow: 0 4px 12px rgba(74, 101, 114, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background-color: var(--admin-danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text);
+}
+
+.btn-outline:hover {
+    border-color: var(--admin-accent);
+    color: var(--admin-accent);
+    background-color: rgba(74, 101, 114, 0.05);
+}
+
+.card {
+    background: var(--admin-surface);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    padding: 20px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.table th {
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-success { background: #dcfce7; color: #166534; }
+.badge-warning { background: #fef9c3; color: #854d0e; }
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--admin-text);
+    letter-spacing: 0.3px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--admin-primary);
+    background-color: #F9FAFB;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.form-control:hover {
+    border-color: #9CA3AF;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--admin-accent);
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(74, 101, 114, 0.15);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Quill custom height */
+#editor-container {
+    height: 400px;
+    background: white;
+}

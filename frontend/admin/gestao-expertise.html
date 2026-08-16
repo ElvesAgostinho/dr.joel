@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Áreas de Prática - Mário & Joel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">M&J Admin</div>
+            <nav class="admin-nav">
+                <a href="index.html">Publicações</a>
+                <a href="equipa.html">Equipa</a>
+                <a href="artes.html">Arte</a>
+                <a href="gestao-expertise.html" class="active">Áreas de Prática</a>
+                <a href="gestao-sobrenos.html">Sobre Nós</a>
+                <a href="../index.html">Ver Site</a>
+            
+                <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                    <a href="mudar-senha.html">Mudar Senha</a>
+                    <a href="#" id="btn-logout">Terminar Sessão</a>
+                </div>
+            </nav>
+        </aside>
+        
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1>Gestão de Áreas de Prática</h1>
+                <a href="editor-expertise.html" class="btn btn-primary">+ Nova Área</a>
+            </div>
+
+            <div class="card" style="margin-bottom: 40px;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Data Criação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expertise-tbody">
+                        <!-- Expertise dynamically loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/mockDB.js"></script>
+    <script src="js/expertise.js"></script>
+
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

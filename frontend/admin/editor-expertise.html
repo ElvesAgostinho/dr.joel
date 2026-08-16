@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Área de Prática - Mário & Joel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">M&J Admin</div>
+            <nav class="admin-nav">
+                <a href="index.html">Publicações</a>
+                <a href="equipa.html">Equipa</a>
+                <a href="artes.html">Arte</a>
+                <a href="gestao-expertise.html" class="active">Áreas de Prática</a>
+                <a href="gestao-sobrenos.html">Sobre Nós</a>
+                <a href="../index.html">Ver Site</a>
+            
+                <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                    <a href="mudar-senha.html">Mudar Senha</a>
+                    <a href="#" id="btn-logout">Terminar Sessão</a>
+                </div>
+            </nav>
+        </aside>
+        
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1 id="editor-title">Nova Área de Prática</h1>
+                <a href="gestao-expertise.html" class="btn btn-secondary">Cancelar</a>
+            </div>
+
+            <div class="card">
+                <form id="exp-form" onsubmit="event.preventDefault();">
+                    <input type="hidden" id="exp-id">
+                    
+                    <div class="form-group">
+                        <label for="exp-title">Título da Área de Prática</label>
+                        <input type="text" id="exp-title" class="form-control" required placeholder="Ex: Direito Fiscal">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="exp-desc">Descrição / Texto Principal</label>
+                        <div id="quill-editor" style="height: 300px; background: white;"></div>
+                    <input type="hidden" id="exp-desc">
+                    </div>
+
+                    <button type="button" id="btn-save-exp" class="btn btn-primary" style="margin-top: 20px;">Gravar Área de Prática</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="js/mockDB.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const expId = urlParams.get('id');
+            
+            if (expId) {
+                document.getElementById('editor-title').textContent = 'Editar Área de Prática';
+                const exp = MockDB.getExpertiseItem(expId);
+                if (exp) {
+                    document.getElementById('exp-id').value = exp.id;
+                    document.getElementById('exp-title').value = exp.title;
+                    document.getElementById('exp-desc').value = exp.description;
+                }
+            }
+
+            document.getElementById('btn-save-exp').addEventListener('click', () => {
+                const title = document.getElementById('exp-title').value;
+                const description = document.getElementById('exp-desc').value;
+
+                if (!title || !description) {
+                    alert('Por favor, preencha todos os campos!');
+                    return;
+                }
+
+                const expData = {
+                    id: document.getElementById('exp-id').value || null,
+                    title: title,
+                    description: description
+                };
+
+                MockDB.saveExpertiseItem(expData);
+                alert('Área de Prática guardada com sucesso!');
+                window.location.href = 'gestao-expertise.html';
+            });
+        });
+    </script>
+
+    <script>
+        var quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    ['link', 'clean']
+                ]
+            }
+        });
+    </script>
+
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+</body>
+
+</html>

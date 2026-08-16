@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="100%" height="100%">
+    <!-- Shield Outline -->
+    <path d="M10,40 L100,10 L190,40 L190,120 C190,180 100,230 100,230 C100,230 10,180 10,120 Z" fill="none" stroke="currentColor" stroke-width="12" stroke-linejoin="round"/>
+    
+    <!-- Inner Shield Line -->
+    <path d="M25,50 L100,25 L175,50 L175,115 C175,165 100,205 100,205 C100,205 25,165 25,115 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    
+    <!-- Scale Beam -->
+    <line x1="50" y1="80" x2="150" y2="80" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+    
+    <!-- Scale Pillar Center -->
+    <line x1="100" y1="80" x2="100" y2="180" stroke="currentColor" stroke-width="8"/>
+    
+    <!-- Scale Pillar Base -->
+    <path d="M80,180 L120,180 L120,190 L80,190 Z" fill="currentColor"/>
+    <path d="M70,190 L130,190 L130,200 L70,200 Z" fill="currentColor"/>
+    <circle cx="100" cy="70" r="5" fill="currentColor"/>
+    
+    <!-- Scale Strings and Bowls (Left) -->
+    <line x1="50" y1="80" x2="40" y2="130" stroke="currentColor" stroke-width="2"/>
+    <line x1="50" y1="80" x2="60" y2="130" stroke="currentColor" stroke-width="2"/>
+    <path d="M30,130 Q50,145 70,130 Z" fill="currentColor"/>
+    
+    <!-- Scale Strings and Bowls (Right) -->
+    <line x1="150" y1="80" x2="140" y2="130" stroke="currentColor" stroke-width="2"/>
+    <line x1="150" y1="80" x2="160" y2="130" stroke="currentColor" stroke-width="2"/>
+    <path d="M130,130 Q150,145 170,130 Z" fill="currentColor"/>
+    
+    <!-- Letter M -->
+    <text x="75" y="125" font-family="Georgia, serif" font-size="55" font-weight="bold" fill="currentColor" text-anchor="middle">M</text>
+    
+    <!-- Letter J -->
+    <text x="135" y="125" font-family="Georgia, serif" font-size="55" font-weight="bold" fill="currentColor" text-anchor="middle">J</text>
+</svg>
