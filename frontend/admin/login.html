@@ -33,6 +33,12 @@
             width: 100%;
             margin-top: 20px;
         }
+        .login-error {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 12px;
+            display: none;
+        }
     </style>
     <script src="js/auth.js"></script>
 </head>
@@ -49,20 +55,38 @@
                     <label for="password">Palavra-passe</label>
                     <input type="password" id="password" class="form-control" required placeholder="********">
                 </div>
-                <button type="submit" class="btn btn-primary login-btn">Entrar</button>
+                <button type="submit" class="btn btn-primary login-btn" id="login-btn">Entrar</button>
+                <p class="login-error" id="login-error"></p>
             </form>
         </div>
-    </div><script>
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
             
-            const btn = e.target.querySelector('button');
+            var email = document.getElementById('email').value;
+            var password = document.getElementById('password').value;
+            var btn = document.getElementById('login-btn');
+            var errorEl = document.getElementById('login-error');
+            
             btn.textContent = "A entrar...";
             btn.disabled = true;
+            errorEl.style.display = 'none';
 
-            await signIn(email, password);
+            // Wait for signIn to be available (Supabase SDK might still be loading)
+            var attempts = 0;
+            while (typeof window.signIn !== 'function' && attempts < 50) {
+                await new Promise(function(r) { setTimeout(r, 100); });
+                attempts++;
+            }
+
+            if (typeof window.signIn === 'function') {
+                await window.signIn(email, password);
+            } else {
+                errorEl.textContent = 'Erro de ligação. Recarregue a página e tente novamente.';
+                errorEl.style.display = 'block';
+            }
 
             btn.textContent = "Entrar";
             btn.disabled = false;
