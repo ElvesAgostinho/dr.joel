@@ -66,19 +66,35 @@ const translations = {
 (function injectTranslateStyles() {
     var style = document.createElement('style');
     style.innerHTML = `
-        .goog-te-banner-frame.skiptranslate, .goog-te-banner-frame, iframe.goog-te-banner-frame { 
+        /* Ocultar barra superior, iframes e balões de ajuda do Google Translate */
+        iframe[class*="goog"], 
+        iframe[id*="goog"], 
+        .goog-te-banner-frame, 
+        .goog-te-banner,
+        #goog-gt-tt, 
+        .goog-te-balloon-frame, 
+        .goog-tooltip,
+        .goog-tooltip:hover { 
             display: none !important; 
+            visibility: hidden !important; 
         }
+        
+        /* Impedir que o Google desloque o corpo da página para baixo */
         body { 
             top: 0px !important; 
+            position: static !important;
         }
-        #goog-gt-tt, .goog-te-balloon-frame, .placeholder { 
-            display: none !important; 
+        html {
+            margin-top: 0px !important;
+            top: 0px !important;
         }
+        
+        /* Remover realce de texto traduzido */
         .goog-text-highlight { 
             background-color: transparent !important; 
             border: none !important; 
             box-shadow: none !important; 
+            color: inherit !important;
         }
     `;
     document.head.appendChild(style);
