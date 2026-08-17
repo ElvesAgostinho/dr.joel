@@ -81,7 +81,26 @@ document.addEventListener("DOMContentLoaded", () => {
         if (post) {
             titleInput.value = post.title;
             coverInput.value = post.coverImage || '';
-            if(post.category) categoryInput.value = post.category;
+            if (post.category) {
+                const cat = post.category.toUpperCase().trim();
+                let optionExists = false;
+                for (let i = 0; i < categoryInput.options.length; i++) {
+                    if (categoryInput.options[i].value === cat) {
+                        optionExists = true;
+                        break;
+                    }
+                }
+                if (!optionExists) {
+                    const opt = document.createElement('option');
+                    opt.value = cat;
+                    opt.textContent = cat.charAt(0) + cat.slice(1).toLowerCase();
+                    categoryInput.insertBefore(opt, categoryInput.options[categoryInput.options.length - 1]);
+                }
+                categoryInput.value = cat;
+            }
+            if (post.coverImage && typeof window.updateCoverPreview === 'function') {
+                window.updateCoverPreview(post.coverImage);
+            }
             publishedCheckbox.checked = post.published;
             // Load content into Quill
             quill.root.innerHTML = post.content;

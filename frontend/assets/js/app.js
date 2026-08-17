@@ -498,7 +498,11 @@ function renderBlogPosts() {
 
         card.innerHTML = `
             <div class="blog-img-wrapper">
-                ${art.img ? `<img src="${art.img}" alt="${art.title}">` : ''}
+                ${art.img ? (
+                    (art.img.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(art.img))
+                        ? `<video src="${art.img}" style="width: 100%; height: 100%; object-fit: cover;" muted autoplay loop></video>`
+                        : `<img src="${art.img}" alt="${art.title}">`
+                ) : ''}
             </div>
             <div class="blog-card-content">
                 <div class="category">${art.category}</div>
@@ -535,7 +539,10 @@ function openPostModal(id) {
     
     let mediaHtml = "";
     if (post.coverImage) {
-        mediaHtml = `<img src="${post.coverImage}" alt="Capa" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 30px;">`;
+        const isVideo = post.coverImage.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(post.coverImage);
+        mediaHtml = isVideo
+            ? `<video src="${post.coverImage}" controls style="width: 100%; height: 350px; object-fit: cover; border-radius: 8px; margin-bottom: 30px;" autoplay muted loop></video>`
+            : `<img src="${post.coverImage}" alt="Capa" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 30px;">`;
     }
 
     body.innerHTML = `
@@ -672,14 +679,38 @@ function renderInsightsPage(categoryFilter = null) {
         categoryFilter = urlParams.get('category') || 'TODOS';
     }
 
-    // Update active class on subnav links
-    document.querySelectorAll('.insights-subnav a').forEach(a => {
-        a.classList.remove('active');
-        // Decode URI component in case it's URL-encoded in the data-filter
-        if (a.getAttribute('data-filter') && decodeURIComponent(categoryFilter).toUpperCase() === a.getAttribute('data-filter').toUpperCase()) {
-            a.classList.add('active');
-        }
-    });
+    // Gerar dinamicamente as categorias na sub-navegação caso o container exista
+    const subnavContainer = document.querySelector('.insights-subnav');
+    if (subnavContainer) {
+        const allPosts = MockDB.getPosts().filter(p => p.published);
+        const categoriesSet = new Set();
+        categoriesSet.add('TODOS');
+        allPosts.forEach(p => {
+            if (p.category) {
+                categoriesSet.add(p.category.toUpperCase().trim());
+            } else {
+                categoriesSet.add('ARTIGO');
+            }
+        });
+        
+        const uniqueCategories = Array.from(categoriesSet);
+        subnavContainer.innerHTML = '';
+        uniqueCategories.forEach(cat => {
+            const label = cat === 'TODOS' ? 'TODOS' : (cat === 'ARTIGO' ? 'ARTIGOS' : cat);
+            const a = document.createElement('a');
+            a.href = '#';
+            a.setAttribute('data-filter', cat);
+            a.textContent = label;
+            if (categoryFilter.toUpperCase() === cat) {
+                a.className = 'active';
+            }
+            a.onclick = (e) => {
+                e.preventDefault();
+                filterInsights(cat, e);
+            };
+            subnavContainer.appendChild(a);
+        });
+    }
 
     let posts = MockDB.getPosts().filter(p => p.published);
     if (categoryFilter !== 'TODOS') {
@@ -703,9 +734,14 @@ function renderInsightsPage(categoryFilter = null) {
         const bgImage = post.coverImage || defaultCovers[index % defaultCovers.length];
         const date = new Date(post.createdAt).toLocaleDateString('pt-PT', {day:'numeric', month:'long', year:'numeric'});
         const category = post.category || 'ARTIGO';
+        
+        const isVideo = bgImage.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(bgImage);
+        const mediaHtml = isVideo
+            ? `<div class="card-horizontal-img" style="position:relative; overflow:hidden;"><video src="${bgImage}" style="position:absolute; width:100%; height:100%; object-fit:cover;" muted autoplay loop></video></div>`
+            : `<div class="card-horizontal-img" style="background-image: url('${bgImage}');"></div>`;
 
         card.innerHTML = `
-            <div class="card-horizontal-img" style="background-image: url('${bgImage}');"></div>
+            ${mediaHtml}
             <div class="card-horizontal-content">
                 <div class="category" style="color:var(--color-accent);">${category}</div>
                 <h3>${post.title}</h3>
