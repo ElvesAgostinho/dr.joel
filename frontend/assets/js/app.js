@@ -473,8 +473,14 @@ function renderArtePage() {
         card.className = 'art-card';
         card.style.cssText = 'border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s; cursor: pointer; display: flex; flex-direction: column;';
         
+        // Detectar se é vídeo ou imagem pelo data URI ou extensão
+        const isVideo = (arte.image && (arte.image.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(arte.image)));
+        const mediaHtml = isVideo
+            ? `<video src="${arte.image}" style="width: 100%; height: 250px; object-fit: cover;" controls muted></video>`
+            : `<img src="${arte.image}" alt="${arte.title}" style="width: 100%; height: 250px; object-fit: cover;">`;
+
         card.innerHTML = `
-            <img src="${arte.image}" alt="${arte.title}" style="width: 100%; height: 250px; object-fit: cover;">
+            ${mediaHtml}
             <div style="padding: 20px; text-align: left; flex: 1;">
                 <h3 style="color: var(--color-primary); margin-bottom: 10px; font-size: 1.3rem;">${arte.title}</h3>
                 <p style="color: var(--color-secondary); font-size: 0.95rem; line-height: 1.5;">${arte.description}</p>
@@ -516,12 +522,21 @@ function renderMemberPage() {
     document.getElementById('member-email').href = `mailto:${member.email}`;
 
     document.getElementById('member-photo-large').style.backgroundImage = `url('${member.img}')`;
-    document.getElementById('member-bio').innerHTML = `<p>${member.bio.replace(/\\n/g, '<br>')}</p>`;
+    document.getElementById('member-bio').innerHTML = `<p>${(member.bio || '').replace(/\\n/g, '<br>')}</p>`;
 
-    document.getElementById('member-habilitacoes').innerHTML = `<p>${member.habilitacoes.replace(/\\n/g, '<br>')}</p>`;
-    document.getElementById('member-experiencia').innerHTML = `<p>${member.experiencia.replace(/\\n/g, '<br>')}</p>`;
-    document.getElementById('member-associacoes').innerHTML = `<p>${member.associacoes.replace(/\\n/g, '<br>')}</p>`;
-    document.getElementById('member-linguas').innerHTML = `<p>${member.linguas.replace(/\\n/g, '<br>')}</p>`;
+    document.getElementById('member-habilitacoes').innerHTML = `<p>${(member.habilitacoes || '—').replace(/\\n/g, '<br>')}</p>`;
+    document.getElementById('member-experiencia').innerHTML = `<p>${(member.experiencia || '—').replace(/\\n/g, '<br>')}</p>`;
+    document.getElementById('member-associacoes').innerHTML = `<p>${(member.associacoes || '—').replace(/\\n/g, '<br>')}</p>`;
+    document.getElementById('member-linguas').innerHTML = `<p>${(member.linguas || '—').replace(/\\n/g, '<br>')}</p>`;
+
+    // CV Download - se o membro tem CV, apontar para download real
+    const cvBtn = document.getElementById('member-cv-btn');
+    if (cvBtn && member.cv) {
+        cvBtn.href = member.cv;
+        cvBtn.setAttribute('download', `CV_${member.name}.pdf`);
+        cvBtn.removeAttribute('onclick');
+        cvBtn.title = 'Baixar CV';
+    }
 
     // Accordion Logic
     const headers = document.querySelectorAll('.accordion-header');

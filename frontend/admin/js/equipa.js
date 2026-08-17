@@ -89,6 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('membro-photo').value = item.img || '';
                 quill.root.innerHTML = item.bio || '';
                 document.getElementById('membro-cv').value = item.cv || '';
+                document.getElementById('membro-habilitacoes').value = item.habilitacoes || '';
+                document.getElementById('membro-experiencia').value = item.experiencia || '';
+                document.getElementById('membro-associacoes').value = item.associacoes || '';
+                document.getElementById('membro-linguas').value = item.linguas || '';
             }
         }
         
@@ -106,6 +110,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 img: document.getElementById('membro-photo').value,
                 bio: document.getElementById('membro-bio').value,
                 cv: document.getElementById('membro-cv').value,
+                habilitacoes: document.getElementById('membro-habilitacoes').value,
+                experiencia: document.getElementById('membro-experiencia').value,
+                associacoes: document.getElementById('membro-associacoes').value,
+                linguas: document.getElementById('membro-linguas').value,
             };
             
             MockDB.saveMember(memberData);
