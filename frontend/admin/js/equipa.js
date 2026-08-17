@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Handle file uploads via Base64
         const photoFile = document.getElementById('membro-photo-file');
         const photoHidden = document.getElementById('membro-photo');
+        const photoPreview = document.getElementById('photo-preview');
+        const photoPreviewWrapper = document.getElementById('photo-preview-wrapper');
+
         if (photoFile) {
             photoFile.addEventListener('change', function() {
                 const file = this.files[0];
@@ -52,6 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         photoHidden.value = e.target.result;
+                        if (photoPreview && photoPreviewWrapper) {
+                            photoPreview.src = e.target.result;
+                            photoPreviewWrapper.style.display = 'block';
+                        }
                     };
                     reader.readAsDataURL(file);
                 }
@@ -87,6 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('membro-email').value = item.email || '';
                 document.getElementById('membro-phone').value = item.phone || '';
                 document.getElementById('membro-photo').value = item.img || '';
+                if (item.img && photoPreview && photoPreviewWrapper) {
+                    photoPreview.src = item.img;
+                    photoPreviewWrapper.style.display = 'block';
+                }
                 quill.root.innerHTML = item.bio || '';
                 document.getElementById('membro-cv').value = item.cv || '';
                 document.getElementById('membro-habilitacoes').value = item.habilitacoes || '';

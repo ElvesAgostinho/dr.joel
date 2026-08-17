@@ -67,9 +67,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="membro-photo">Foto</label>
+                    <label for="membro-photo">Foto do Membro</label>
                     <input type="file" id="membro-photo-file" class="form-control" accept="image/*">
                     <input type="hidden" id="membro-photo">
+                    <div id="photo-preview-wrapper" style="margin-top: 12px; display: none;">
+                        <img id="photo-preview" alt="Pré-visualização" style="max-width: 200px; max-height: 250px; border-radius: 8px; object-fit: cover; border: 3px solid #28a745; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <p style="margin-top: 8px; color: #28a745; font-weight: 600; font-size: 0.9rem;">✓ Foto carregada — clique "Guardar Membro" para salvar</p>
+                    </div>
                 </div>
                 
                 <div class="form-group">
