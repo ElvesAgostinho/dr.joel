@@ -92,7 +92,7 @@ const MockDB = {
             localStorage.setItem(TEAM_KEY, JSON.stringify(defaultTeam));
             return defaultTeam;
         }
-        return JSON.parse(data).sort((a, b) => b.createdAt - a.createdAt);
+        return JSON.parse(data).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     },
 
     getMember: function(id) {
@@ -109,8 +109,15 @@ const MockDB = {
         } else {
             const index = team.findIndex(m => m.id === member.id);
             if (index !== -1) {
-                team[index] = { ...team[index], ...member };
+                const original = team[index];
+                team[index] = { 
+                    createdAt: original.createdAt || Date.now(), 
+                    ...member 
+                };
             } else {
+                if (!member.createdAt) {
+                    member.createdAt = Date.now();
+                }
                 team.push(member);
             }
         }
