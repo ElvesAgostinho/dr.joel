@@ -107,8 +107,11 @@ document.addEventListener("DOMContentLoaded", () => {
             published: publishedCheckbox.checked
         };
 
-        MockDB.savePost(postData);
-        alert("Publicação guardada com sucesso!");
-        window.location.href = "index.html";
+        MockDB.savePost(postData).then(() => {
+            alert("Publicação guardada com sucesso!");
+            window.location.href = "index.html";
+        }).catch(err => {
+            alert("Erro ao guardar publicação: " + err.message);
+        });
     });
 });

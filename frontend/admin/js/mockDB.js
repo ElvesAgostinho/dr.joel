@@ -6,54 +6,76 @@ const TEAM_KEY = 'mj_team';
 const SUPABASE_URL = 'https://ulymellasjmsejgeutyt.supabase.co/rest/v1';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVseW1lbGxhc2ptc2VqZ2V1dHl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NzU0NzQsImV4cCI6MjA4ODA1MTQ3NH0.wSa6XbIylhl7ChzeD9oqGu5NzN4_0E1cWHYeUmeBAkY';
 
-// Helper de requisições síncronas para manter compatibilidade com o frontend síncrono
-function makeRequest(method, path, body) {
-    try {
-        var xhr = new XMLHttpRequest();
-        // Construir URL completa
-        var url = SUPABASE_URL + path;
-        
-        xhr.open(method, url, false); // Síncrono
-        xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        
-        // Adicionar cabeçalho de autenticação do administrador logado, se existir
-        var sessionRaw = localStorage.getItem('mj_admin_session');
-        if (sessionRaw) {
-            try {
-                var session = JSON.parse(sessionRaw);
-                if (session && session.access_token) {
-                    xhr.setRequestHeader('Authorization', 'Bearer ' + session.access_token);
-                }
-            } catch(e) {}
-        }
-        
-        if (body) {
-            xhr.send(JSON.stringify(body));
-        } else {
-            xhr.send();
-        }
-        
-        if (xhr.status >= 200 && xhr.status < 300) {
-            return xhr.responseText ? JSON.parse(xhr.responseText) : [];
-        } else {
-            console.warn('Supabase request failed with status: ' + xhr.status, xhr.responseText);
-            if (xhr.status === 401 || xhr.status === 403) {
-                if (method !== 'GET') {
-                    alert('Sessão expirada. Por favor, inicie sessão novamente no painel de administração.');
-                    localStorage.removeItem('mj_admin_session');
-                    window.location.href = 'login.html';
-                }
+// Helper de requisições ASSÍNCRONAS para escrita segura e compatível com CORS em todos os browsers
+function makeRequestAsync(method, path, body) {
+    var headers = {
+        'apikey': SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+    };
+    
+    var sessionRaw = localStorage.getItem('mj_admin_session');
+    if (sessionRaw) {
+        try {
+            var session = JSON.parse(sessionRaw);
+            if (session && session.access_token) {
+                headers['Authorization'] = 'Bearer ' + session.access_token;
             }
-            return null;
-        }
-    } catch (e) {
-        console.error('Supabase network error:', e);
-        return null;
+        } catch(e) {}
     }
+    
+    return fetch(SUPABASE_URL + path, {
+        method: method,
+        headers: headers,
+        body: body ? JSON.stringify(body) : undefined
+    })
+    .then(res => {
+        if (res.status === 401 || res.status === 403) {
+            alert('Sessão expirada. Por favor, inicie sessão novamente no painel de administração.');
+            localStorage.removeItem('mj_admin_session');
+            window.location.href = 'login.html';
+            throw new Error('Auth expired');
+        }
+        if (!res.ok) throw new Error('Request failed with status ' + res.status);
+        return res.text().then(text => text ? JSON.parse(text) : {});
+    });
 }
 
-// Gerador de UUID para chaves primárias compatíveis com Supabase
+// SWR - Função de sincronização assíncrona em segundo plano para leitura
+function syncTable(endpoint, localStorageKey, mapFunction) {
+    var headers = {
+        'apikey': SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+    };
+    
+    fetch(SUPABASE_URL + '/' + endpoint, {
+        method: 'GET',
+        headers: headers
+    })
+    .then(res => {
+        if (res.ok) return res.json();
+        throw new Error('Fetch failed');
+    })
+    .then(data => {
+        var mapped = data.map(mapFunction);
+        var oldLocal = localStorage.getItem(localStorageKey);
+        var newLocalJson = JSON.stringify(mapped);
+        
+        // Se a BD tem dados novos e diferentes da cache do browser, atualiza e recarrega
+        if (oldLocal !== newLocalJson) {
+            localStorage.setItem(localStorageKey, newLocalJson);
+            
+            // Apenas recarrega se o documento já terminou o parse inicial (evita loops na carga)
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                window.location.reload();
+            }
+        }
+    })
+    .catch(err => {
+        console.warn('Erro na sincronização de segundo plano para: ' + endpoint, err);
+    });
+}
+
+// Gerador de UUID para chaves primárias do Supabase
 function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -61,43 +83,81 @@ function generateUUID() {
     });
 }
 
+// Inicializar Sincronização em Segundo Plano (SWR) ao carregar a página
+if (typeof window !== 'undefined') {
+    // Sincronizar membros
+    syncTable('team?order=created_at.desc', TEAM_KEY, function(row) {
+        return {
+            id: row.id,
+            name: row.name,
+            role: row.role,
+            area: row.area,
+            img: row.img,
+            email: row.email,
+            phone: row.phone,
+            bio: row.bio,
+            habilitacoes: row.habilitacoes,
+            experiencia: row.experiencia,
+            associacoes: row.associacoes,
+            linguas: row.linguas,
+            cv: row.cv,
+            createdAt: new Date(row.created_at).getTime()
+        };
+    });
+
+    // Sincronizar posts
+    syncTable('posts?order=created_at.desc', DB_KEY, function(row) {
+        return {
+            id: row.id,
+            title: row.title,
+            content: row.content,
+            coverImage: row.cover_image,
+            published: row.published,
+            createdAt: new Date(row.created_at).getTime(),
+            category: row.category || 'ARTIGO'
+        };
+    });
+
+    // Sincronizar artes
+    syncTable('artes?order=created_at.desc', 'mj_artes', function(row) {
+        return {
+            id: row.id,
+            title: row.title,
+            image: row.image,
+            description: row.description,
+            createdAt: new Date(row.created_at).getTime()
+        };
+    });
+
+    // Sincronizar expertise
+    syncTable('expertise?order=created_at.desc', 'mj_expertise', function(row) {
+        return {
+            id: row.id,
+            title: row.title,
+            description: row.description,
+            createdAt: new Date(row.created_at).getTime()
+        };
+    });
+
+    // Sincronizar páginas sobre nós
+    syncTable('sobrenos_pages', 'mj_sobrenos', function(row) {
+        return {
+            id: row.id,
+            title: row.title,
+            content: row.content,
+            lastUpdated: new Date(row.last_updated).getTime()
+        };
+    });
+}
+
 const MockDB = {
-    // --- GESTÃO DE POSTS (Publicações) ---
+    // --- GESTÃO DE POSTS ---
     getPosts: function() {
-        var res = makeRequest('GET', '/posts?order=created_at.desc');
-        if (res !== null) {
-            var posts = res.map(function(row) {
-                return {
-                    id: row.id,
-                    title: row.title,
-                    content: row.content,
-                    coverImage: row.cover_image,
-                    published: row.published,
-                    createdAt: new Date(row.created_at).getTime(),
-                    category: row.category || 'ARTIGO'
-                };
-            });
-            localStorage.setItem(DB_KEY, JSON.stringify(posts));
-            return posts;
-        }
         var local = localStorage.getItem(DB_KEY);
         return local ? JSON.parse(local) : [];
     },
     
     getPost: function(id) {
-        var res = makeRequest('GET', '/posts?id=eq.' + id);
-        if (res !== null && res.length > 0) {
-            var row = res[0];
-            return {
-                id: row.id,
-                title: row.title,
-                content: row.content,
-                coverImage: row.cover_image,
-                published: row.published,
-                createdAt: new Date(row.created_at).getTime(),
-                category: row.category || 'ARTIGO'
-            };
-        }
         var posts = this.getPosts();
         return posts.find(p => p.id === id);
     },
@@ -112,27 +172,42 @@ const MockDB = {
             category: post.category || 'ARTIGO'
         };
 
+        var promise;
         if (isNew) {
             payload.id = generateUUID();
-            makeRequest('POST', '/posts', payload);
+            promise = makeRequestAsync('POST', '/posts', payload);
         } else {
-            makeRequest('PATCH', '/posts?id=eq.' + post.id, payload);
+            promise = makeRequestAsync('PATCH', '/posts?id=eq.' + post.id, payload);
         }
-        this.getPosts(); // Atualizar cache local
-        return post;
+        
+        return promise.then(() => {
+            // Atualizar cache local imediatamente
+            var posts = this.getPosts();
+            if (isNew) {
+                posts.push({ id: payload.id, ...payload, createdAt: Date.now() });
+            } else {
+                var index = posts.findIndex(p => p.id === post.id);
+                if (index !== -1) posts[index] = { ...posts[index], ...payload };
+            }
+            localStorage.setItem(DB_KEY, JSON.stringify(posts));
+            return post;
+        });
     },
     
     deletePost: function(id) {
-        makeRequest('DELETE', '/posts?id=eq.' + id);
-        this.getPosts();
+        return makeRequestAsync('DELETE', '/posts?id=eq.' + id).then(() => {
+            var posts = this.getPosts().filter(p => p.id !== id);
+            localStorage.setItem(DB_KEY, JSON.stringify(posts));
+        });
     },
 
     togglePublish: function(id) {
         var post = this.getPost(id);
         if (post) {
             post.published = !post.published;
-            this.savePost(post);
+            return this.savePost(post);
         }
+        return Promise.resolve();
     },
 
     // --- GESTÃO DE ESTATÍSTICAS ---
@@ -153,80 +228,13 @@ const MockDB = {
         return stats;
     },
 
-    // --- GESTÃO DE EQUIPA (Advogados) ---
+    // --- GESTÃO DE EQUIPA ---
     getTeam: function() {
-        var res = makeRequest('GET', '/team?order=created_at.desc');
-        if (res !== null) {
-            var team = res.map(function(row) {
-                return {
-                    id: row.id,
-                    name: row.name,
-                    role: row.role,
-                    area: row.area,
-                    img: row.img,
-                    email: row.email,
-                    phone: row.phone,
-                    bio: row.bio,
-                    habilitacoes: row.habilitacoes,
-                    experiencia: row.experiencia,
-                    associacoes: row.associacoes,
-                    linguas: row.linguas,
-                    cv: row.cv,
-                    createdAt: new Date(row.created_at).getTime()
-                };
-            });
-            
-            // Auto-inicializar com os membros padrão se o Supabase estiver vazio
-            if (team.length === 0) {
-                const defaultTeam = [
-                    { name: "António Caxito Marques", role: "Sócio Internacional*", area: "Direito Público", img: "assets/images/bg-1.jpg", email: "amarques@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "António Caxito Marques tem uma vasta experiência...", habilitacoes: "Licenciatura em Direito", experiencia: "Mais de 20 anos de experiência", associacoes: "Ordem dos Advogados de Angola", linguas: "Português, Inglês, Francês" },
-                    { name: "Djamila Pinto de Andrade", role: "Sócia Internacional*", area: "Contencioso", img: "assets/images/bg-1.jpg", email: "dandrade@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "Djamila Pinto de Andrade integra a firma...", habilitacoes: "Licenciatura em Direito", experiencia: "15 anos de experiência", associacoes: "Ordem dos Advogados", linguas: "Português, Inglês" },
-                    { name: "António Penelas", role: "Sócio Internacional*", area: "Corporate", img: "assets/images/bg-1.jpg", email: "apenelas@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "Especialista em Corporate...", habilitacoes: "-", experiencia: "-", associacoes: "-", linguas: "-" },
-                    { name: "Américo Oliveira Fragoso", role: "Sócio Responsável da Área Laboral", area: "Laboral", img: "assets/images/bg-1.jpg", email: "afragoso@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "Especialista em Direito do Trabalho...", habilitacoes: "-", experiencia: "-", associacoes: "-", linguas: "-" },
-                    { name: "Assunção Cristas", role: "Sócia Co-Responsável da Área Ambiente & Clima", area: "Ambiente", img: "assets/images/bg-1.jpg", email: "acristas@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "Especialista em Ambiente...", habilitacoes: "-", experiencia: "-", associacoes: "-", linguas: "-" },
-                    { name: "António de Magalhães Cardoso", role: "Sócio Sénior do Grupo Contencioso", area: "Contencioso", img: "assets/images/bg-1.jpg", email: "acardoso@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "Sócio sénior...", habilitacoes: "-", experiencia: "-", associacoes: "-", linguas: "-" },
-                    { name: "Marta Alves Vieira", role: "Sócia Responsável da Área PI Contencioso", area: "Contencioso", img: "assets/images/bg-1.jpg", email: "mvieira@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "Especialista em PI...", habilitacoes: "-", experiencia: "-", associacoes: "-", linguas: "-" },
-                    { name: "André Gaspar Martins", role: "Sócio Responsável da Área Público", area: "Público", img: "assets/images/bg-1.jpg", email: "amartins@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "Especialista em Direito Público...", habilitacoes: "-", experiencia: "-", associacoes: "-", linguas: "-" },
-                    { name: "Ana Marta Castro", role: "Sócia Público", area: "Público", img: "assets/images/bg-1.jpg", email: "acastro@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "Especialista em Público...", habilitacoes: "-", experiencia: "-", associacoes: "-", linguas: "-" },
-                    { name: "Ana Luís de Sousa", role: "Sócia Executiva", area: "Energia", img: "assets/images/bg-1.jpg", email: "asousa@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "Especialista em Energia...", habilitacoes: "-", experiencia: "-", associacoes: "-", linguas: "-" },
-                    { name: "João Vieira de Almeida", role: "Senior Partner", area: "Corporate", img: "assets/images/bg-1.jpg", email: "jalmeida@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "Senior Partner...", habilitacoes: "-", experiencia: "-", associacoes: "-", linguas: "-" },
-                    { name: "Cláudia Cruz Almeida", role: "Sócia Responsável", area: "Corporate", img: "assets/images/bg-1.jpg", email: "calmeida@marioejoeladv.com", phone: "(+244) 928 186 060", bio: "Corporate...", habilitacoes: "-", experiencia: "-", associacoes: "-", linguas: "-" }
-                ];
-                defaultTeam.forEach(function(member) {
-                    member.id = generateUUID();
-                    makeRequest('POST', '/team', member);
-                });
-                return this.getTeam();
-            }
-            
-            localStorage.setItem(TEAM_KEY, JSON.stringify(team));
-            return team;
-        }
         var local = localStorage.getItem(TEAM_KEY);
         return local ? JSON.parse(local) : [];
     },
 
     getMember: function(id) {
-        var res = makeRequest('GET', '/team?id=eq.' + id);
-        if (res !== null && res.length > 0) {
-            var row = res[0];
-            return {
-                id: row.id,
-                name: row.name,
-                role: row.role,
-                area: row.area,
-                img: row.img,
-                email: row.email,
-                phone: row.phone,
-                bio: row.bio,
-                habilitacoes: row.habilitacoes,
-                experiencia: row.experiencia,
-                associacoes: row.associacoes,
-                linguas: row.linguas,
-                cv: row.cv,
-                createdAt: new Date(row.created_at).getTime()
-            };
-        }
         var team = this.getTeam();
         return team.find(m => m.id === id);
     },
@@ -248,67 +256,41 @@ const MockDB = {
             linguas: member.linguas
         };
 
+        var promise;
         if (isNew) {
             payload.id = generateUUID();
-            makeRequest('POST', '/team', payload);
+            promise = makeRequestAsync('POST', '/team', payload);
         } else {
-            makeRequest('PATCH', '/team?id=eq.' + member.id, payload);
+            promise = makeRequestAsync('PATCH', '/team?id=eq.' + member.id, payload);
         }
-        this.getTeam();
-        return member;
+        
+        return promise.then(() => {
+            var team = this.getTeam();
+            if (isNew) {
+                team.push({ id: payload.id, ...payload, createdAt: Date.now() });
+            } else {
+                var index = team.findIndex(m => m.id === member.id);
+                if (index !== -1) team[index] = { ...team[index], ...payload };
+            }
+            localStorage.setItem(TEAM_KEY, JSON.stringify(team));
+            return member;
+        });
     },
 
     deleteMember: function(id) {
-        makeRequest('DELETE', '/team?id=eq.' + id);
-        this.getTeam();
+        return makeRequestAsync('DELETE', '/team?id=eq.' + id).then(() => {
+            var team = this.getTeam().filter(m => m.id !== id);
+            localStorage.setItem(TEAM_KEY, JSON.stringify(team));
+        });
     },
 
     // --- GESTÃO DE ARTES ---
     getArtes: function() {
-        var res = makeRequest('GET', '/artes?order=created_at.desc');
-        if (res !== null) {
-            var artes = res.map(function(row) {
-                return {
-                    id: row.id,
-                    title: row.title,
-                    image: row.image,
-                    description: row.description,
-                    createdAt: new Date(row.created_at).getTime()
-                };
-            });
-            
-            if (artes.length === 0) {
-                var defaultArtes = [
-                    { title: "Estatueta Cokwe", image: "assets/images/abstract_sphere.png", description: "Uma representação clássica da arte tradicional angolana, simbolizando o poder e a sabedoria ancestral." },
-                    { title: "Máscara Mwana Pwo", image: "assets/images/dark_diamonds.png", description: "Máscara feminina utilizada em rituais, destacando-se pelos seus detalhes faciais minuciosos e escarificações." },
-                    { title: "Pensador de Cokwe", image: "assets/images/bg-1.jpg", description: "A figura icónica nacional que expressa profunda reflexão e respeito pela cultura e tradições orais." }
-                ];
-                defaultArtes.forEach(function(art) {
-                    art.id = generateUUID();
-                    makeRequest('POST', '/artes', art);
-                });
-                return this.getArtes();
-            }
-            
-            localStorage.setItem('mj_artes', JSON.stringify(artes));
-            return artes;
-        }
         var local = localStorage.getItem('mj_artes');
         return local ? JSON.parse(local) : [];
     },
 
     getArte: function(id) {
-        var res = makeRequest('GET', '/artes?id=eq.' + id);
-        if (res !== null && res.length > 0) {
-            var row = res[0];
-            return {
-                id: row.id,
-                title: row.title,
-                image: row.image,
-                description: row.description,
-                createdAt: new Date(row.created_at).getTime()
-            };
-        }
         var artes = this.getArtes();
         return artes.find(a => a.id === id);
     },
@@ -321,70 +303,41 @@ const MockDB = {
             description: arte.description
         };
 
+        var promise;
         if (isNew) {
             payload.id = generateUUID();
-            makeRequest('POST', '/artes', payload);
+            promise = makeRequestAsync('POST', '/artes', payload);
         } else {
-            makeRequest('PATCH', '/artes?id=eq.' + arte.id, payload);
+            promise = makeRequestAsync('PATCH', '/artes?id=eq.' + arte.id, payload);
         }
-        this.getArtes();
-        return arte;
+        
+        return promise.then(() => {
+            var artes = this.getArtes();
+            if (isNew) {
+                artes.push({ id: payload.id, ...payload, createdAt: Date.now() });
+            } else {
+                var index = artes.findIndex(a => a.id === arte.id);
+                if (index !== -1) artes[index] = { ...artes[index], ...payload };
+            }
+            localStorage.setItem('mj_artes', JSON.stringify(artes));
+            return arte;
+        });
     },
 
     deleteArte: function(id) {
-        makeRequest('DELETE', '/artes?id=eq.' + id);
-        this.getArtes();
+        return makeRequestAsync('DELETE', '/artes?id=eq.' + id).then(() => {
+            var artes = this.getArtes().filter(a => a.id !== id);
+            localStorage.setItem('mj_artes', JSON.stringify(artes));
+        });
     },
 
     // --- GESTÃO DE EXPERTISE (Áreas de Prática) ---
     getExpertise: function() {
-        var res = makeRequest('GET', '/expertise?order=created_at.desc');
-        if (res !== null) {
-            var items = res.map(function(row) {
-                return {
-                    id: row.id,
-                    title: row.title,
-                    description: row.description,
-                    createdAt: new Date(row.created_at).getTime()
-                };
-            });
-            
-            if (items.length === 0) {
-                var defaultExpertise = [
-                    { id: "financeiro", title: "Financeiro e Governance", description: "Assessoria jurídica integral em operações financeiras, corporate finance e na estruturação de modelos de Corporate Governance (Governação Societária). O nosso foco abrange o acompanhamento de financiamentos estruturados, emissão de dívida, capital markets e o cumprimento normativo e regulatório (Compliance) de entidades reguladas, com o objetivo de assegurar transparência, eficiência e mitigação de riscos estruturais." },
-                    { id: "reestruturacao", title: "Reestruturação Empresarial e Privatizações", description: "Apoio altamente especializado em processos de reestruturação de grupos societários, recuperação de empresas e assessoria na compra e venda de ativos estatais. Representamos tanto entidades públicas como investidores privados em processos de reprivatização, delineando estratégias para maximizar a viabilidade financeira, otimizar operações e gerir passivos em contextos de insolvência ou redefinição estratégica." },
-                    { id: "comercial", title: "Comercial, Societário e M&A", description: "Prestamos assessoria transversal ao ciclo de vida das empresas, desde a sua constituição, estruturação de acordos parassociais, processos de fusão, cisão e aquisição (M&A). Apoiamos investidores na estruturação de joint-ventures, negociação de contratos comerciais complexos e planeamento sucessório em empresas familiares." },
-                    { id: "imobiliario", title: "Imobiliário", description: "Assessoria em todas as fases de operações imobiliárias, incluindo estruturação de fundos, promoção, transação e gestão de ativos imobiliários. Representamos promotores, investidores institucionais e fundos na aquisição de portfólios, negociação de contratos de empreitada, arrendamento comercial e licenciamento urbano." },
-                    { id: "laboral", title: "Laboral", description: "Aconselhamento estratégico e preventivo no âmbito das relações laborais, incluindo a elaboração de contratos de trabalho, destacamento de trabalhadores, negociação coletiva e acompanhamento de processos disciplinares e reestruturações com impacto laboral." },
-                    { id: "fiscal", title: "Fiscal", description: "Planeamento fiscal nacional e internacional, aconselhamento em operações de reestruturação, M&A e estruturação de patrimónios. O nosso serviço inclui também o patrocínio e acompanhamento de processos de contencioso tributário." },
-                    { id: "ppp", title: "Parcerias Público Privadas", description: "Assessoria na estruturação, financiamento e execução de projetos de Parcerias Público Privadas (PPP) e concessões de infraestruturas, cobrindo os setores de energia, transportes, águas e infraestruturas sociais." },
-                    { id: "contratacao", title: "Contratação Pública", description: "Aconselhamento jurídico em todas as fases de procedimentos de contratação pública, prestando apoio tanto a entidades adjudicantes na elaboração de peças de concurso, como a concorrentes privados na preparação de propostas e contencioso pré-contratual." },
-                    { id: "contencioso", title: "Contencioso e Arbitragem", description: "Representação em litígios cíveis, comerciais e societários de elevada complexidade perante tribunais estaduais e arbitrais. Atuamos também em litígios transnacionais, execução de sentenças estrangeiras e na conceção de estratégias de resolução alternativa de litígios." }
-                ];
-                defaultExpertise.forEach(function(item) {
-                    makeRequest('POST', '/expertise', item);
-                });
-                return this.getExpertise();
-            }
-            
-            localStorage.setItem('mj_expertise', JSON.stringify(items));
-            return items;
-        }
         var local = localStorage.getItem('mj_expertise');
         return local ? JSON.parse(local) : [];
     },
 
     getExpertiseItem: function(id) {
-        var res = makeRequest('GET', '/expertise?id=eq.' + id);
-        if (res !== null && res.length > 0) {
-            var row = res[0];
-            return {
-                id: row.id,
-                title: row.title,
-                description: row.description,
-                createdAt: new Date(row.created_at).getTime()
-            };
-        }
         var items = this.getExpertise();
         return items.find(i => i.id === id);
     },
@@ -396,64 +349,41 @@ const MockDB = {
             description: item.description
         };
 
+        var promise;
         if (isNew) {
             payload.id = generateUUID();
-            makeRequest('POST', '/expertise', payload);
+            promise = makeRequestAsync('POST', '/expertise', payload);
         } else {
-            makeRequest('PATCH', '/expertise?id=eq.' + item.id, payload);
+            promise = makeRequestAsync('PATCH', '/expertise?id=eq.' + item.id, payload);
         }
-        this.getExpertise();
-        return item;
+        
+        return promise.then(() => {
+            var items = this.getExpertise();
+            if (isNew) {
+                items.push({ id: payload.id, ...payload, createdAt: Date.now() });
+            } else {
+                var index = items.findIndex(i => i.id === item.id);
+                if (index !== -1) items[index] = { ...items[index], ...payload };
+            }
+            localStorage.setItem('mj_expertise', JSON.stringify(items));
+            return item;
+        });
     },
 
     deleteExpertiseItem: function(id) {
-        makeRequest('DELETE', '/expertise?id=eq.' + id);
-        this.getExpertise();
+        return makeRequestAsync('DELETE', '/expertise?id=eq.' + id).then(() => {
+            var items = this.getExpertise().filter(i => i.id !== id);
+            localStorage.setItem('mj_expertise', JSON.stringify(items));
+        });
     },
 
     // --- GESTÃO DE PÁGINAS SOBRE NÓS ---
     getSobreNosPages: function() {
-        var res = makeRequest('GET', '/sobrenos_pages');
-        if (res !== null) {
-            var pages = res.map(function(row) {
-                return {
-                    id: row.id,
-                    title: row.title,
-                    content: row.content,
-                    lastUpdated: new Date(row.last_updated).getTime()
-                };
-            });
-            
-            if (pages.length === 0) {
-                var defaultPages = [
-                    { id: "a-firma", title: "A Firma", content: "<p>A Mário & Joel - Sociedade de Advogados, RL é uma firma de referência, prestando serviços de elevada qualidade e rigor. O nosso compromisso é oferecer soluções jurídicas que acompanham a evolução dos negócios dos nossos clientes.</p>" },
-                    { id: "premios", title: "Prémios e Reconhecimento", content: "<p>A nossa dedicação tem sido sucessivamente reconhecida nos principais diretórios legais internacionais, refletindo a excelência do nosso trabalho.</p>" },
-                    { id: "carreiras", title: "Carreiras", content: "<p>Estamos sempre à procura de talentos excepcionais. Na M&J oferecemos um ambiente de crescimento e constante superação.</p>" }
-                ];
-                defaultPages.forEach(function(page) {
-                    makeRequest('POST', '/sobrenos_pages', page);
-                });
-                return this.getSobreNosPages();
-            }
-            
-            localStorage.setItem('mj_sobrenos', JSON.stringify(pages));
-            return pages;
-        }
         var local = localStorage.getItem('mj_sobrenos');
         return local ? JSON.parse(local) : [];
     },
 
     getSobreNosPage: function(id) {
-        var res = makeRequest('GET', '/sobrenos_pages?id=eq.' + id);
-        if (res !== null && res.length > 0) {
-            var row = res[0];
-            return {
-                id: row.id,
-                title: row.title,
-                content: row.content,
-                lastUpdated: new Date(row.last_updated).getTime()
-            };
-        }
         var pages = this.getSobreNosPages();
         return pages.find(p => p.id === id);
     },
@@ -464,9 +394,16 @@ const MockDB = {
             content: page.content,
             last_updated: new Date().toISOString()
         };
-        makeRequest('PATCH', '/sobrenos_pages?id=eq.' + page.id, payload);
-        this.getSobreNosPages();
-        return page;
+        
+        return makeRequestAsync('PATCH', '/sobrenos_pages?id=eq.' + page.id, payload).then(() => {
+            var pages = this.getSobreNosPages();
+            var index = pages.findIndex(p => p.id === page.id);
+            if (index !== -1) {
+                pages[index] = { ...pages[index], ...payload, lastUpdated: Date.now() };
+            }
+            localStorage.setItem('mj_sobrenos', JSON.stringify(pages));
+            return page;
+        });
     }
 };
 

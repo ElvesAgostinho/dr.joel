@@ -30,8 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         window.deleteMembro = function(id) {
             if (confirm('Tem a certeza que deseja eliminar este membro?')) {
-                MockDB.deleteMember(id);
-                renderTable();
+                MockDB.deleteMember(id).then(() => {
+                    renderTable();
+                }).catch(err => {
+                    alert('Erro ao eliminar membro: ' + err.message);
+                });
             }
         };
         
@@ -166,8 +169,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 linguas: getVal('membro-linguas'),
             };
             
-            MockDB.saveMember(memberData);
-            window.location.href = 'equipa.html';
+            MockDB.saveMember(memberData).then(() => {
+                window.location.href = 'equipa.html';
+            }).catch(err => {
+                alert('Erro ao guardar membro: ' + err.message);
+            });
         });
     }
 });
