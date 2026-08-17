@@ -68,6 +68,8 @@
                     document.getElementById('sobrenos-id').value = page.id;
                     document.getElementById('sobrenos-title').value = page.title;
                     document.getElementById('sobrenos-content').value = page.content;
+                    // Carregar o conteúdo existente no Quill editor visual
+                    quill.root.innerHTML = page.content;
                 } else {
                     alert("Página não encontrada!");
                     window.location.href = 'gestao-sobrenos.html';
@@ -78,6 +80,9 @@
             }
 
             document.getElementById('btn-save-sobrenos').addEventListener('click', () => {
+                // Sincronizar o conteúdo do Quill para o hidden input antes de ler
+                document.getElementById('sobrenos-content').value = quill.root.innerHTML;
+
                 const title = document.getElementById('sobrenos-title').value;
                 const content = document.getElementById('sobrenos-content').value;
 
