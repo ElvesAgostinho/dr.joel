@@ -7,7 +7,7 @@ directories = [
 ]
 
 # Nova versão para cache bust
-version = 'v=11'
+version = 'v=12'
 
 for directory in directories:
     if not os.path.exists(directory):
@@ -27,7 +27,13 @@ for directory in directories:
             # Substituir app.js
             content = re.sub(r'src="assets/js/app\.js(\?v=[^"]+)?"', f'src="assets/js/app.js?{version}"', content)
             
+            # Substituir auth.js
+            content = re.sub(r'src="(admin/)?js/auth\.js(\?v=[^"]+)?"', f'src="\\1js/auth.js?{version}"', content)
+            
+            # Substituir editor.js
+            content = re.sub(r'src="(admin/)?js/editor\.js(\?v=[^"]+)?"', f'src="\\1js/editor.js?{version}"', content)
+            
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(content)
 
-print("Cache bust applied successfully to all HTML files.")
+print("Cache bust v=12 applied successfully to all HTML files.")

@@ -1,16 +1,66 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // Custom handlers for Quill upload
+    function imageHandler() {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = () => {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const range = quill.getSelection(true);
+                    quill.insertEmbed(range.index, 'image', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+
+    function videoHandler() {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'video/*');
+        input.click();
+
+        input.onchange = () => {
+            const file = input.files[0];
+            if (file) {
+                if (file.size > 20 * 1024 * 1024) { // Limit to 20MB
+                    alert('O vídeo é muito grande. Por favor, escolha um ficheiro menor que 20MB.');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const range = quill.getSelection(true);
+                    const videoHtml = `<video src="${e.target.result}" controls style="max-width:100%; border-radius:8px; display:block; margin:15px 0;" muted></video><p><br></p>`;
+                    quill.clipboard.dangerouslyPasteHTML(range.index, videoHtml);
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+
     // Initialize Quill editor
     const quill = new Quill('#editor-container', {
         theme: 'snow',
         modules: {
-            toolbar: [
-                [{ 'header': [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                ['blockquote', 'code-block'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                ['link', 'image', 'video'],
-                ['clean']
-            ]
+            toolbar: {
+                container: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image', 'video'],
+                    ['clean']
+                ],
+                handlers: {
+                    image: imageHandler,
+                    video: videoHandler
+                }
+            }
         }
     });
 

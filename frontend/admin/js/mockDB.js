@@ -38,6 +38,13 @@ function makeRequest(method, path, body) {
             return xhr.responseText ? JSON.parse(xhr.responseText) : [];
         } else {
             console.warn('Supabase request failed with status: ' + xhr.status, xhr.responseText);
+            if (xhr.status === 401 || xhr.status === 403) {
+                if (method !== 'GET') {
+                    alert('Sessão expirada. Por favor, inicie sessão novamente no painel de administração.');
+                    localStorage.removeItem('mj_admin_session');
+                    window.location.href = 'login.html';
+                }
+            }
             return null;
         }
     } catch (e) {

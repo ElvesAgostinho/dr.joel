@@ -76,10 +76,11 @@
                 alert('Erro no login: ' + msg);
                 return false;
             }
+            var expSecs = data.expires_in || 3600;
             saveSession({
                 access_token: data.access_token,
                 refresh_token: data.refresh_token,
-                expires_at: data.expires_at,
+                expires_at: Math.floor(Date.now() / 1000) + expSecs,
                 user: data.user
             });
             window.location.href = 'index.html';
