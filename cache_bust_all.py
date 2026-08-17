@@ -7,7 +7,7 @@ directories = [
 ]
 
 # Nova versão para cache bust
-version = 'v=13'
+version = 'v=14'
 
 for directory in directories:
     if not os.path.exists(directory):

@@ -69,6 +69,7 @@ const translations = {
         /* Ocultar barra superior, iframes e balões de ajuda do Google Translate */
         iframe[class*="goog"], 
         iframe[id*="goog"], 
+        iframe.skiptranslate,
         .goog-te-banner-frame, 
         .goog-te-banner,
         #goog-gt-tt, 
@@ -99,6 +100,35 @@ const translations = {
     `;
     document.head.appendChild(style);
 })();
+
+// Loop de segurança em Javascript para ocultação garantida e correção do topo da página
+if (typeof window !== 'undefined') {
+    setInterval(function() {
+        var elementsToHide = [
+            document.querySelector('.goog-te-banner-frame'),
+            document.querySelector('iframe.skiptranslate'),
+            document.querySelector('#goog-gt-tt'),
+            document.querySelector('.goog-te-balloon-frame')
+        ];
+        elementsToHide.forEach(function(el) {
+            if (el) {
+                el.style.setProperty('display', 'none', 'important');
+                el.style.setProperty('visibility', 'hidden', 'important');
+            }
+        });
+        if (document.body && document.body.style.top !== '0px') {
+            document.body.style.setProperty('top', '0px', 'important');
+        }
+        if (document.documentElement) {
+            if (document.documentElement.style.marginTop !== '0px') {
+                document.documentElement.style.setProperty('margin-top', '0px', 'important');
+            }
+            if (document.documentElement.style.top !== '0px') {
+                document.documentElement.style.setProperty('top', '0px', 'important');
+            }
+        }
+    }, 100);
+}
 
 // Injeção dinâmica do widget de tradução do Google
 (function injectGoogleTranslate() {
