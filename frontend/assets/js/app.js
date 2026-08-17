@@ -168,9 +168,22 @@ function changeLanguage(lang) {
     // Guardar preferência no localStorage
     localStorage.setItem('mj_lang', lang);
 
-    // Definir cookie para o Google Translate traduzir conteúdos dinâmicos da DB
-    var cookieVal = "googtrans=/pt/" + lang;
-    document.cookie = cookieVal + "; path=/;";
+    // Configurar Cookies do Google Translate
+    var domain = window.location.hostname;
+    var baseDomain = "." + domain.replace(/^www\./, "");
+    
+    if (lang === 'pt') {
+        // Eliminar cookies do Google Translate para restaurar a língua original (Português)
+        document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + domain + ";";
+        document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + baseDomain + ";";
+    } else {
+        // Definir cookie para tradução (ex: Inglês)
+        var cookieVal = "googtrans=/pt/" + lang;
+        document.cookie = cookieVal + "; path=/;";
+        document.cookie = cookieVal + "; path=/; domain=" + domain + ";";
+        document.cookie = cookieVal + "; path=/; domain=" + baseDomain + ";";
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
