@@ -84,47 +84,86 @@ document.addEventListener('DOMContentLoaded', () => {
         const editId = urlParams.get('id');
         
         if (editId) {
-            document.getElementById('editor-title').textContent = 'Editar Membro';
+            const editorTitle = document.getElementById('editor-title');
+            if (editorTitle) editorTitle.textContent = 'Editar Membro';
+            
             const item = MockDB.getMember(editId);
             if (item) {
-                document.getElementById('membro-id').value = item.id;
-                document.getElementById('membro-name').value = item.name;
-                document.getElementById('membro-role').value = item.role;
-                document.getElementById('membro-areas').value = item.areas || item.area || '';
-                document.getElementById('membro-email').value = item.email || '';
-                document.getElementById('membro-phone').value = item.phone || '';
-                document.getElementById('membro-photo').value = item.img || '';
+                const setVal = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val || '';
+                };
+                
+                setVal('membro-id', item.id);
+                setVal('membro-name', item.name);
+                setVal('membro-role', item.role);
+                setVal('membro-areas', item.areas || item.area);
+                setVal('membro-email', item.email);
+                setVal('membro-phone', item.phone);
+                setVal('membro-photo', item.img);
+                
                 if (item.img && photoPreview && photoPreviewWrapper) {
                     photoPreview.src = item.img;
                     photoPreviewWrapper.style.display = 'block';
                 }
-                quill.root.innerHTML = item.bio || '';
-                document.getElementById('membro-cv').value = item.cv || '';
-                document.getElementById('membro-habilitacoes').value = item.habilitacoes || '';
-                document.getElementById('membro-experiencia').value = item.experiencia || '';
-                document.getElementById('membro-associacoes').value = item.associacoes || '';
-                document.getElementById('membro-linguas').value = item.linguas || '';
+                
+                // Safe Quill content loading
+                if (typeof quill !== 'undefined' && quill.root) {
+                    quill.root.innerHTML = item.bio || '';
+                } else {
+                    const qEditor = document.getElementById('quill-editor');
+                    if (qEditor) {
+                        const qRoot = qEditor.querySelector('.ql-editor');
+                        if (qRoot) qRoot.innerHTML = item.bio || '';
+                        else qEditor.innerHTML = item.bio || '';
+                    }
+                }
+                
+                setVal('membro-cv', item.cv);
+                setVal('membro-habilitacoes', item.habilitacoes);
+                setVal('membro-experiencia', item.experiencia);
+                setVal('membro-associacoes', item.associacoes);
+                setVal('membro-linguas', item.linguas);
             }
         }
         
         form.addEventListener('submit', (e) => {
-            document.getElementById('membro-bio').value = quill.root.innerHTML;
             e.preventDefault();
             
+            // Safe Quill content retrieval
+            let bioContent = '';
+            if (typeof quill !== 'undefined' && quill.root) {
+                bioContent = quill.root.innerHTML;
+            } else {
+                const qEditor = document.getElementById('quill-editor');
+                if (qEditor) {
+                    const qRoot = qEditor.querySelector('.ql-editor');
+                    bioContent = qRoot ? qRoot.innerHTML : qEditor.innerHTML;
+                }
+            }
+            
+            const bioField = document.getElementById('membro-bio');
+            if (bioField) bioField.value = bioContent;
+            
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value : '';
+            };
+            
             const memberData = {
-                id: document.getElementById('membro-id').value || 'tm_' + Date.now(),
-                name: document.getElementById('membro-name').value,
-                role: document.getElementById('membro-role').value,
-                area: document.getElementById('membro-areas').value,
-                email: document.getElementById('membro-email').value,
-                phone: document.getElementById('membro-phone').value,
-                img: document.getElementById('membro-photo').value,
-                bio: document.getElementById('membro-bio').value,
-                cv: document.getElementById('membro-cv').value,
-                habilitacoes: document.getElementById('membro-habilitacoes').value,
-                experiencia: document.getElementById('membro-experiencia').value,
-                associacoes: document.getElementById('membro-associacoes').value,
-                linguas: document.getElementById('membro-linguas').value,
+                id: getVal('membro-id') || 'tm_' + Date.now(),
+                name: getVal('membro-name'),
+                role: getVal('membro-role'),
+                area: getVal('membro-areas'),
+                email: getVal('membro-email'),
+                phone: getVal('membro-phone'),
+                img: getVal('membro-photo'),
+                bio: getVal('membro-bio'),
+                cv: getVal('membro-cv'),
+                habilitacoes: getVal('membro-habilitacoes'),
+                experiencia: getVal('membro-experiencia'),
+                associacoes: getVal('membro-associacoes'),
+                linguas: getVal('membro-linguas'),
             };
             
             MockDB.saveMember(memberData);
