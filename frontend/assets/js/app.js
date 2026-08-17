@@ -7,15 +7,15 @@ const translations = {
         nav_team_partners: "Sócios",
         nav_team_lawyers: "Advogados",
         nav_team_consultants: "Consultores",
-        nav_expertise: "Expertise",
+        nav_expertise: "Áreas de Prática",
         nav_exp_corp: "Corporate & M&A",
         nav_exp_bank: "Banking & Finance",
         nav_exp_tax: "Tax",
         nav_exp_real: "Real Estate",
         nav_partners: "M&J Legal Partners",
-        nav_part_africa: "ÃÂfrica",
+        nav_part_africa: "África",
         nav_part_latam: "América Latina",
-        nav_part_asia: "ÃÂsia",
+        nav_part_asia: "Ásia",
         nav_insights: "Insights & Media",
         nav_ins_news: "Newsletters",
         nav_ins_pub: "Publicações",
@@ -28,7 +28,7 @@ const translations = {
         search_placeholder: "O que procura?",
         search_btn: "Procurar",
         contact_title: "Contacte-nos",
-        contact_desc: "Estamos ÃÂ  sua disposição globalmente."
+        contact_desc: "Estamos à sua disposição globalmente."
     },
     en: {
         brand: "Mário & Joel",
@@ -37,7 +37,7 @@ const translations = {
         nav_team_partners: "Partners",
         nav_team_lawyers: "Lawyers",
         nav_team_consultants: "Consultants",
-        nav_expertise: "Expertise",
+        nav_expertise: "Practice Areas",
         nav_exp_corp: "Corporate & M&A",
         nav_exp_bank: "Banking & Finance",
         nav_exp_tax: "Tax",
@@ -62,6 +62,51 @@ const translations = {
     }
 };
 
+// CSS de ocultação da barra de tradução do Google Translate
+(function injectTranslateStyles() {
+    var style = document.createElement('style');
+    style.innerHTML = `
+        .goog-te-banner-frame.skiptranslate, .goog-te-banner-frame, iframe.goog-te-banner-frame { 
+            display: none !important; 
+        }
+        body { 
+            top: 0px !important; 
+        }
+        #goog-gt-tt, .goog-te-balloon-frame, .placeholder { 
+            display: none !important; 
+        }
+        .goog-text-highlight { 
+            background-color: transparent !important; 
+            border: none !important; 
+            box-shadow: none !important; 
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
+// Injeção dinâmica do widget de tradução do Google
+(function injectGoogleTranslate() {
+    var translateDiv = document.createElement('div');
+    translateDiv.id = 'google_translate_element';
+    translateDiv.style.display = 'none';
+    document.body.appendChild(translateDiv);
+
+    window.googleTranslateElementInit = function() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'pt',
+            includedLanguages: 'pt,en',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+        }, 'google_translate_element');
+    };
+
+    var script = document.createElement('script');
+    script.id = 'google-translate-script';
+    script.type = 'text/javascript';
+    script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    document.body.appendChild(script);
+})();
+
 function changeLanguage(lang) {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -73,6 +118,13 @@ function changeLanguage(lang) {
     });
     const langText = document.getElementById('active-lang-text');
     if(langText) langText.textContent = lang.toUpperCase();
+
+    // Guardar preferência no localStorage
+    localStorage.setItem('mj_lang', lang);
+
+    // Definir cookie para o Google Translate traduzir conteúdos dinâmicos da DB
+    var cookieVal = "googtrans=/pt/" + lang;
+    document.cookie = cookieVal + "; path=/;";
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -182,8 +234,14 @@ document.addEventListener('DOMContentLoaded', () => {
         opt.addEventListener('click', (e) => {
             e.preventDefault();
             const lang = opt.getAttribute('data-lang');
-            changeLanguage(lang);
-            localStorage.setItem('mj_lang', lang);
+            const currentLang = localStorage.getItem('mj_lang') || 'pt';
+            if (lang !== currentLang) {
+                changeLanguage(lang);
+                // Forçar recarga para que o Google Translate corra em todo o DOM (incluindo dados da BD)
+                setTimeout(() => {
+                    window.location.reload();
+                }, 100);
+            }
             const parent = opt.closest('.nav-item');
             if(parent) parent.classList.remove('active');
         });
@@ -191,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Apply saved language preference on load
     const savedLang = localStorage.getItem('mj_lang');
-    if (savedLang && savedLang !== 'pt') {
+    if (savedLang) {
         changeLanguage(savedLang);
     }
 

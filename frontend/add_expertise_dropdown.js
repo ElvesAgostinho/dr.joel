@@ -2,7 +2,7 @@ const fs = require('fs');
 const files = fs.readdirSync('.').filter(f => f.endsWith('.html'));
 
 const expertiseDropdown = `<li class="nav-item">
-                        <a href="expertise.html">Expertise</a>
+                        <a href="expertise.html" data-i18n="nav_expertise">Áreas de Prática</a>
                         <div class="dropdown-popup">
                             <div class="dropdown-content">
                                 <ul>
