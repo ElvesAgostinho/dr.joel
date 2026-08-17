@@ -15,11 +15,11 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const date = new Date(post.createdAt).toLocaleDateString('pt-PT');
             const statusBadge = post.published 
-                ? `<span class="badge badge-success">Publicado</span>`
-                : `<span class="badge badge-warning">Rascunho</span>`;
+                ? `<span class="badge badge-success" style="cursor:pointer;" onclick="togglePublish('${post.id}')" title="Clique para despublicar">Publicado</span>`
+                : `<span class="badge badge-warning" style="cursor:pointer;" onclick="togglePublish('${post.id}')" title="Clique para publicar">Rascunho</span>`;
 
             tr.innerHTML = `
-                <td><strong>${post.title}</strong></td>
+                <td><strong>${post.title}</strong><br><small style="color:#888;">${post.category || 'ARTIGO'}</small></td>
                 <td>${date}</td>
                 <td>${statusBadge}</td>
                 <td class="actions">
@@ -30,6 +30,12 @@ document.addEventListener("DOMContentLoaded", () => {
             tbody.appendChild(tr);
         });
     }
+
+    window.togglePublish = function togglePublish(id) {
+        MockDB.togglePublish(id);
+        renderPosts();
+    }
+
 
     window.deletePost = function deletePost(id) {
         if(confirm('Tem a certeza que deseja eliminar esta publicação?')) {
