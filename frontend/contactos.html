@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="pt-PT">
 
@@ -18,7 +18,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/main.css?v=29">
+    <link rel="stylesheet" href="assets/css/main.css?v=30">
 
     <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
 
@@ -556,12 +556,29 @@
 
 
 
-    <script src="admin/js/api.js?v=29"></script>
+    <script src="admin/js/api.js?v=30"></script>
 
-    <script src="assets/js/app.js?v=29"></script>
+    <script src="assets/js/app.js?v=30"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Carregar opções do "Tipo de Solicitação *" geridas pelo Admin
+            var selectType = document.getElementById('contact-type');
+            if (selectType && typeof API !== 'undefined' && API.getRequestTypes) {
+                try {
+                    var types = await API.getRequestTypes();
+                    if (types && types.length > 0) {
+                        selectType.innerHTML = '';
+                        types.forEach(function(t) {
+                            var opt = document.createElement('option');
+                            opt.value = t.title;
+                            opt.textContent = t.title;
+                            selectType.appendChild(opt);
+                        });
+                    }
+                } catch(e) {}
+            }
+
             var form = document.getElementById('contact-form');
             if (form) {
                 form.addEventListener('submit', async function(e) {

@@ -401,22 +401,28 @@ const API = {
         return await request('POST', '/contacts', payload, false, true);
     },
 
-    getContacts: async function() {
-        const data = await request('GET', '/contacts?order=criado_em.desc');
+    // --- TIPOS DE SOLICITAÇÃO (SERVIÇOS DO FORMULÁRIO) ---
+    getRequestTypes: async function() {
+        const data = await request('GET', '/request_types?order=created_at.asc');
         return data.map(row => ({
             id: row.id,
-            nome: row.nome,
-            email: row.email,
-            telefone: row.telefone,
-            empresa: row.empresa,
-            assunto: row.assunto,
-            mensagem: row.mensagem,
-            createdAt: row.criado_em ? new Date(row.criado_em).getTime() : Date.now()
+            title: row.title,
+            createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now()
         }));
     },
 
-    deleteContact: async function(id) {
-        return await request('DELETE', `/contacts?id=eq.${id}`);
+    saveRequestType: async function(item) {
+        const payload = { title: item.title };
+        if (!item.id || item.id.startsWith('new_')) {
+            payload.id = generateUUID();
+            return await request('POST', '/request_types', payload);
+        } else {
+            return await request('PATCH', `/request_types?id=eq.${item.id}`, payload);
+        }
+    },
+
+    deleteRequestType: async function(id) {
+        return await request('DELETE', `/request_types?id=eq.${id}`);
     }
 };
 
