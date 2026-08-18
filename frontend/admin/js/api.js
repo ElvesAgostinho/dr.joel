@@ -354,6 +354,20 @@ const API = {
     saveStats: async function(stats) {
         localStorage.setItem('mj_site_stats', JSON.stringify(stats));
         return stats;
+    },
+
+    // --- CONTACTOS ---
+    sendContact: async function(contactData) {
+        const payload = {
+            id: generateUUID(),
+            nome: contactData.nome,
+            email: contactData.email,
+            telefone: contactData.telefone || '',
+            empresa: contactData.empresa || '',
+            assunto: contactData.assunto,
+            mensagem: contactData.mensagem
+        };
+        return await request('POST', '/contacts', payload);
     }
 };
 
