@@ -186,7 +186,7 @@ function changeLanguage(lang) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // 1. Mobile Menu Toggle
     const mobileBtn = document.querySelector('.mobile-menu-btn');
     const navMenu = document.querySelector('.nav-menu');
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Dynamic Rendering: Expertise ---
     const expertiseContainer = document.getElementById('expertise-container');
     if (expertiseContainer && typeof API !== 'undefined') {
-        const items = API.getExpertise();
+        const items = await API.getExpertise();
         if (items.length > 0) {
             expertiseContainer.innerHTML = '';
             items.forEach(item => {
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sobrenosContainer && typeof API !== 'undefined') {
         const pageId = sobrenosContainer.getAttribute('data-page');
         if (pageId) {
-            const pageData = API.getSobreNosPage(pageId);
+            const pageData = await API.getSobreNosPage(pageId);
             if (pageData) {
                 // Remove the "Página em Atualização" title
                 const headerSection = document.querySelector('.sub-header h1');
@@ -486,7 +486,7 @@ async function renderBlogPosts() {
     // Fonte única: API (sincronizado com Supabase via localStorage)
     let articles = [];
     if (typeof API !== 'undefined') {
-        articles = API.getPosts()
+        articles = (await API.getPosts())
             .filter(p => p.published)
             .map(p => ({
                 id: p.id,
@@ -529,8 +529,8 @@ async function renderBlogPosts() {
     });
 }
 
-function openPostModal(id) {
-    const post = API.getPost(id);
+async function openPostModal(id) {
+    const post = await API.getPost(id);
     if (!post) return;
     
     // Simple modal implementation for reading full post
@@ -569,23 +569,23 @@ function openPostModal(id) {
     modal.classList.add('active');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Other existing code...
-    renderBlogPosts();
-    renderInsightsPage();
-    renderArtePage();
-    renderTeamPage();
-    renderMemberPage();
+    await renderBlogPosts();
+    await renderInsightsPage();
+    await renderArtePage();
+    await renderTeamPage();
+    await renderMemberPage();
     animateStats();
     initMegaMenuTeam();
 });
 
 // Arte Page Logic
-function renderArtePage() {
+async function renderArtePage() {
     const container = document.getElementById('arte-page-container');
     if (!container || typeof API === 'undefined') return;
 
-    const artes = API.getArtes();
+    const artes = await API.getArtes();
     container.innerHTML = '';
 
     if (artes.length === 0) {
