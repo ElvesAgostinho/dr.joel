@@ -1,12 +1,8 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     renderArtesTable();
 
     // Re-renderizar se a BD for atualizada em segundo plano
-    // window.addEventListener('mj:db-updated', function(e) {
-        if (e.detail && e.detail.key === 'mj_artes') {
-            renderArtesTable();
-        }
-    });
+    
 });
 
 async function renderArtesTable() {

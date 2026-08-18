@@ -1,7 +1,7 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const tbody = document.getElementById("posts-tbody");
 
-    function renderPosts() {
+    async function renderPosts() {
         if (!tbody) return;
         const posts = await API.getPosts();
         tbody.innerHTML = "";
@@ -55,11 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPosts();
 
     // Re-renderizar se a BD for atualizada em segundo plano
-    // window.addEventListener('mj:db-updated', function(e) {
-        if (e.detail && e.detail.key === 'mj_blog_posts') {
-            renderPosts();
-        }
-    });
+    
 
     // Stats Management
     const stats = await API.getStats();

@@ -1,19 +1,15 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     renderExpertiseTable();
 
     // Re-renderizar se a BD for atualizada em segundo plano
-    // window.addEventListener('mj:db-updated', function(e) {
-        if (e.detail && e.detail.key === 'mj_expertise') {
-            renderExpertiseTable();
-        }
-    });
+    
 });
 
 async function renderExpertiseTable() {
     const tbody = document.getElementById('expertise-tbody');
     if (!tbody || typeof API === 'undefined') return;
 
-    const items = await API.getExpertise();
+    const items = API.getExpertise();
     tbody.innerHTML = '';
 
     if (items.length === 0) {

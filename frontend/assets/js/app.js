@@ -1,37 +1,37 @@
-// Translations Dictionary
+﻿// Translations Dictionary
 const translations = {
     pt: {
-        brand: "Mário & Joel",
+        brand: "MÃ¡rio & Joel",
         subtitle: "Sociedade de Advogados, RL",
         nav_team: "Equipa",
-        nav_team_partners: "Sócios",
+        nav_team_partners: "SÃ³cios",
         nav_team_lawyers: "Advogados",
         nav_team_consultants: "Consultores",
-        nav_expertise: "Áreas de Prática",
+        nav_expertise: "Ãreas de PrÃ¡tica",
         nav_exp_corp: "Corporate & M&A",
         nav_exp_bank: "Banking & Finance",
         nav_exp_tax: "Tax",
         nav_exp_real: "Real Estate",
         nav_partners: "M&J Legal Partners",
-        nav_part_africa: "África",
-        nav_part_latam: "América Latina",
-        nav_part_asia: "Ásia",
+        nav_part_africa: "Ãfrica",
+        nav_part_latam: "AmÃ©rica Latina",
+        nav_part_asia: "Ãsia",
         nav_insights: "Insights & Media",
         nav_ins_news: "Newsletters",
-        nav_ins_pub: "Publicações",
+        nav_ins_pub: "PublicaÃ§Ãµes",
         nav_ins_press: "Imprensa",
-        nav_about: "Sobre Nós",
+        nav_about: "Sobre NÃ³s",
         nav_about_firm: "A Firma",
-        nav_about_awards: "Prémios e Reconhecimento",
+        nav_about_awards: "PrÃ©mios e Reconhecimento",
         nav_about_careers: "Carreiras",
         search_title: "Pesquisar",
         search_placeholder: "O que procura?",
         search_btn: "Procurar",
         contact_title: "Contacte-nos",
-        contact_desc: "Estamos à sua disposição globalmente."
+        contact_desc: "Estamos Ã  sua disposiÃ§Ã£o globalmente."
     },
     en: {
-        brand: "Mário & Joel",
+        brand: "MÃ¡rio & Joel",
         subtitle: "Law Firm, RL",
         nav_team: "Team",
         nav_team_partners: "Partners",
@@ -62,11 +62,11 @@ const translations = {
     }
 };
 
-// CSS de ocultação da barra de tradução do Google Translate
+// CSS de ocultaÃ§Ã£o da barra de traduÃ§Ã£o do Google Translate
 (function injectTranslateStyles() {
     var style = document.createElement('style');
     style.innerHTML = `
-        /* Ocultar barra superior, iframes e balões de ajuda do Google Translate */
+        /* Ocultar barra superior, iframes e balÃµes de ajuda do Google Translate */
         iframe[class*="goog"], 
         iframe[id*="goog"], 
         iframe.skiptranslate,
@@ -80,7 +80,7 @@ const translations = {
             visibility: hidden !important; 
         }
         
-        /* Impedir que o Google desloque o corpo da página para baixo */
+        /* Impedir que o Google desloque o corpo da pÃ¡gina para baixo */
         body { 
             top: 0px !important; 
             position: static !important;
@@ -101,7 +101,7 @@ const translations = {
     document.head.appendChild(style);
 })();
 
-// Loop de segurança em Javascript para ocultação garantida e correção do topo da página
+// Loop de seguranÃ§a em Javascript para ocultaÃ§Ã£o garantida e correÃ§Ã£o do topo da pÃ¡gina
 if (typeof window !== 'undefined') {
     setInterval(function() {
         var elementsToHide = [
@@ -130,7 +130,7 @@ if (typeof window !== 'undefined') {
     }, 100);
 }
 
-// Injeção dinâmica do widget de tradução do Google
+// InjeÃ§Ã£o dinÃ¢mica do widget de traduÃ§Ã£o do Google
 (function injectGoogleTranslate() {
     var translateDiv = document.createElement('div');
     translateDiv.id = 'google_translate_element';
@@ -165,7 +165,7 @@ function changeLanguage(lang) {
     const langText = document.getElementById('active-lang-text');
     if(langText) langText.textContent = lang.toUpperCase();
 
-    // Guardar preferência no localStorage
+    // Guardar preferÃªncia no localStorage
     localStorage.setItem('mj_lang', lang);
 
     // Configurar Cookies do Google Translate
@@ -173,12 +173,12 @@ function changeLanguage(lang) {
     var baseDomain = "." + domain.replace(/^www\./, "");
     
     if (lang === 'pt') {
-        // Eliminar cookies do Google Translate para restaurar a língua original (Português)
+        // Eliminar cookies do Google Translate para restaurar a lÃ­ngua original (PortuguÃªs)
         document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + domain + ";";
         document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + baseDomain + ";";
     } else {
-        // Definir cookie para tradução (ex: Inglês)
+        // Definir cookie para traduÃ§Ã£o (ex: InglÃªs)
         var cookieVal = "googtrans=/pt/" + lang;
         document.cookie = cookieVal + "; path=/;";
         document.cookie = cookieVal + "; path=/; domain=" + domain + ";";
@@ -186,7 +186,7 @@ function changeLanguage(lang) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // 1. Mobile Menu Toggle
     const mobileBtn = document.querySelector('.mobile-menu-btn');
     const navMenu = document.querySelector('.nav-menu');
@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentLang = localStorage.getItem('mj_lang') || 'pt';
             if (lang !== currentLang) {
                 changeLanguage(lang);
-                // Forçar recarga para que o Google Translate corra em todo o DOM (incluindo dados da BD)
+                // ForÃ§ar recarga para que o Google Translate corra em todo o DOM (incluindo dados da BD)
                 setTimeout(() => {
                     window.location.reload();
                 }, 100);
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Toggle current
                     if (!isExpanded) {
                         content.style.display = 'block';
-                        icon.textContent = '−';
+                        icon.textContent = 'âˆ’';
                         icon.style.transform = 'rotate(180deg)';
                     }
                 });
@@ -380,14 +380,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Dynamic Rendering: Sobre Nós (Institucional) ---
+    // --- Dynamic Rendering: Sobre NÃ³s (Institucional) ---
     const sobrenosContainer = document.getElementById('sobrenos-container');
     if (sobrenosContainer && typeof API !== 'undefined') {
         const pageId = sobrenosContainer.getAttribute('data-page');
         if (pageId) {
             const pageData = await API.getSobreNosPage(pageId);
             if (pageData) {
-                // Remove the "Página em Atualização" title
+                // Remove the "PÃ¡gina em AtualizaÃ§Ã£o" title
                 const headerSection = document.querySelector('.sub-header h1');
                 if (headerSection && pageData.title) {
                     headerSection.textContent = pageData.title;
@@ -483,7 +483,7 @@ async function renderBlogPosts() {
 
     container.innerHTML = '';
 
-    // Fonte única: MockDB (sincronizado com Supabase via localStorage)
+    // Fonte Ãºnica: MockDB (sincronizado com Supabase via localStorage)
     let articles = [];
     if (typeof API !== 'undefined') {
         articles = await API.getPosts()
@@ -569,9 +569,9 @@ async function openPostModal(id) {
     modal.classList.add('active');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Other existing code...
-    renderBlogPosts();
+    await renderBlogPosts();
     renderInsightsPage();
     renderArtePage();
     renderTeamPage();
@@ -589,7 +589,7 @@ async function renderArtePage() {
     container.innerHTML = '';
 
     if (artes.length === 0) {
-        container.innerHTML = '<p style="text-align:center; width:100%; color:#666;">Ainda não existem peças de arte publicadas.</p>';
+        container.innerHTML = '<p style="text-align:center; width:100%; color:#666;">Ainda nÃ£o existem peÃ§as de arte publicadas.</p>';
         return;
     }
 
@@ -598,7 +598,7 @@ async function renderArtePage() {
         card.className = 'art-card';
         card.style.cssText = 'border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s; cursor: pointer; display: flex; flex-direction: column;';
         
-        // Detectar se é vídeo ou imagem pelo data URI ou extensão
+        // Detectar se Ã© vÃ­deo ou imagem pelo data URI ou extensÃ£o
         const isVideo = (arte.image && (arte.image.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(arte.image)));
         const mediaHtml = isVideo
             ? `<video src="${arte.image}" style="width: 100%; height: 250px; object-fit: cover;" controls muted></video>`
@@ -624,18 +624,18 @@ async function renderMemberPage() {
     const memberId = urlParams.get('id');
 
     if (!memberId || !window.API) {
-        memberNameEl.textContent = "Membro não encontrado";
+        memberNameEl.textContent = "Membro nÃ£o encontrado";
         return;
     }
 
     const member = await API.getMember(memberId);
     if (!member) {
-        memberNameEl.textContent = "Membro não encontrado";
+        memberNameEl.textContent = "Membro nÃ£o encontrado";
         return;
     }
 
     // Populate Data
-    document.title = `${member.name} - Mário & Joel`;
+    document.title = `${member.name} - MÃ¡rio & Joel`;
     memberNameEl.textContent = member.name;
     document.getElementById('member-name-small').textContent = member.name;
     document.getElementById('member-role').textContent = member.role;
@@ -649,10 +649,10 @@ async function renderMemberPage() {
     document.getElementById('member-photo-large').style.backgroundImage = `url('${member.img}')`;
     document.getElementById('member-bio').innerHTML = `<p>${(member.bio || '').replace(/\\n/g, '<br>')}</p>`;
 
-    document.getElementById('member-habilitacoes').innerHTML = `<p>${(member.habilitacoes || '—').replace(/\\n/g, '<br>')}</p>`;
-    document.getElementById('member-experiencia').innerHTML = `<p>${(member.experiencia || '—').replace(/\\n/g, '<br>')}</p>`;
-    document.getElementById('member-associacoes').innerHTML = `<p>${(member.associacoes || '—').replace(/\\n/g, '<br>')}</p>`;
-    document.getElementById('member-linguas').innerHTML = `<p>${(member.linguas || '—').replace(/\\n/g, '<br>')}</p>`;
+    document.getElementById('member-habilitacoes').innerHTML = `<p>${(member.habilitacoes || 'â€”').replace(/\\n/g, '<br>')}</p>`;
+    document.getElementById('member-experiencia').innerHTML = `<p>${(member.experiencia || 'â€”').replace(/\\n/g, '<br>')}</p>`;
+    document.getElementById('member-associacoes').innerHTML = `<p>${(member.associacoes || 'â€”').replace(/\\n/g, '<br>')}</p>`;
+    document.getElementById('member-linguas').innerHTML = `<p>${(member.linguas || 'â€”').replace(/\\n/g, '<br>')}</p>`;
 
     // CV Download - se o membro tem CV, apontar para download real
     const cvBtn = document.getElementById('member-cv-btn');
@@ -684,7 +684,7 @@ async function renderMemberPage() {
     });
 }
 
-function renderInsightsPage(categoryFilter = null) {
+async function renderInsightsPage(categoryFilter = null) {
     const container = document.getElementById('insights-page-container');
     if (!container || typeof API === 'undefined') return;
 
@@ -693,10 +693,10 @@ function renderInsightsPage(categoryFilter = null) {
         categoryFilter = urlParams.get('category') || 'TODOS';
     }
 
-    // Gerar dinamicamente as categorias na sub-navegação caso o container exista
+    // Gerar dinamicamente as categorias na sub-navegaÃ§Ã£o caso o container exista
     const subnavContainer = document.querySelector('.insights-subnav');
     if (subnavContainer) {
-        const allPosts = await API.getPosts().filter(p => p.published);
+        const allPosts = (await API.getPosts()).filter(p => p.published);
         const categoriesSet = new Set();
         categoriesSet.add('TODOS');
         allPosts.forEach(p => {
@@ -726,7 +726,7 @@ function renderInsightsPage(categoryFilter = null) {
         });
     }
 
-    let posts = await API.getPosts().filter(p => p.published);
+    let posts = (await API.getPosts()).filter(p => p.published);
     if (categoryFilter !== 'TODOS') {
         posts = posts.filter(p => (p.category || 'ARTIGO').toUpperCase() === categoryFilter.toUpperCase());
     }
@@ -734,7 +734,7 @@ function renderInsightsPage(categoryFilter = null) {
     container.innerHTML = "";
 
     if (posts.length === 0) {
-        container.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #999; padding: 40px;">Não foram encontrados artigos nesta categoria.</p>`;
+        container.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #999; padding: 40px;">NÃ£o foram encontrados artigos nesta categoria.</p>`;
         return;
     }
 
@@ -886,7 +886,7 @@ async function renderTeamPage() {
     renderTeamMembers(initialQuery);
 }
 
-function renderTeamMembers(searchQuery = '') {
+async function renderTeamMembers(searchQuery = '') {
     const container = document.getElementById('team-page-container');
     if (!container) return;
 
@@ -933,13 +933,13 @@ function renderTeamMembers(searchQuery = '') {
     });
 }
 
-function initMegaMenuTeam() {
+async function initMegaMenuTeam() {
     // Dynamic Stats
     const statsElements = document.querySelectorAll('.mega-menu-content .team-stats');
     if (typeof API !== 'undefined' && statsElements.length > 0) {
-        const teamCount = await API.getTeam().length;
+        const teamCount = (await API.getTeam()).length;
         statsElements.forEach(el => {
-            el.innerHTML = `<span class="text-accent">${teamCount} profissionais</span> focados na excelência e rigor jurídico`;
+            el.innerHTML = `<span class="text-accent">${teamCount} profissionais</span> focados na excelÃªncia e rigor jurÃ­dico`;
         });
     }
 
@@ -1016,7 +1016,7 @@ function initConciergeSearch() {
     const conciergeCard = document.querySelector('.concierge-card');
     
     if (selects.length >= 2 && conciergeCard) {
-        const practiceSelect = selects[1]; // The second select is for "Práticas"
+        const practiceSelect = selects[1]; // The second select is for "PrÃ¡ticas"
         const btn = conciergeCard.querySelector('.btn-primary');
         
         if (btn) {
@@ -1034,7 +1034,7 @@ function initConciergeSearch() {
 }
 
 // Ensure it runs on load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     initConciergeSearch();
 });
 
@@ -1044,11 +1044,11 @@ function initCookieBanner() {
         const popup = document.createElement('div');
         popup.className = 'cookie-popup';
         popup.innerHTML = ` <div class="cookie-text">
-                Utilizamos cookies para otimizar o nosso website e o nosso serviço, em conformidade com a LGPD e o RGPD. 
-                Pode saber mais na nossa <a href="politica-cookies.html">Política de Cookies</a> e <a href="politica-privacidade.html">Política de Privacidade</a>.
+                Utilizamos cookies para otimizar o nosso website e o nosso serviÃ§o, em conformidade com a LGPD e o RGPD. 
+                Pode saber mais na nossa <a href="politica-cookies.html">PolÃ­tica de Cookies</a> e <a href="politica-privacidade.html">PolÃ­tica de Privacidade</a>.
             </div>
             <div class="cookie-actions">
-                <button class="cookie-btn cookie-btn-settings" onclick="window.location.href='definicoes-cookies.html'">Definições</button>
+                <button class="cookie-btn cookie-btn-settings" onclick="window.location.href='definicoes-cookies.html'">DefiniÃ§Ãµes</button>
                 <button class="cookie-btn cookie-btn-accept" id="accept-cookies">Aceitar Tudo</button>
             </div>`; document.body.appendChild(popup);
         
@@ -1063,12 +1063,12 @@ document.addEventListener('DOMContentLoaded', initCookieBanner);
 
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Inject Team count if element exists
     const teamStatsText = document.getElementById('equipa-stats-text');
     if(teamStatsText) {
         const count = localStorage.getItem('mj_team_count') || '12';
-        teamStatsText.textContent = count + ' profissionais focados na excelência e rigor jurídico.';
+        teamStatsText.textContent = count + ' profissionais focados na excelÃªncia e rigor jurÃ­dico.';
     }
 
     // Function to render galleries
@@ -1077,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!container) return;
         
         let images = JSON.parse(localStorage.getItem('mj_gallery_' + sectionKey));
-        // Se não houver imagens, mostrar um texto ou vazio
+        // Se nÃ£o houver imagens, mostrar um texto ou vazio
         if(!images || images.length === 0) {
             container.innerHTML = '';
             return;
@@ -1102,7 +1102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPublicGallery('carreiras', 'carreiras-gallery-container');
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Insights Page Dynamic Rendering
     const insightsContainer = document.getElementById('insights-page-container');
     if (insightsContainer) {
@@ -1194,3 +1194,5 @@ window.doSiteSearch = function() {
 
     resultsDiv.innerHTML = `<p style="font-size:0.85rem; color:#999; margin-bottom:10px;">${matches.length} resultado(s) encontrado(s)</p>` + html;
 };
+
+

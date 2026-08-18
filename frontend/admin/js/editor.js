@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     // Custom handlers for Quill upload
     function imageHandler() {
         const input = document.createElement('input');
