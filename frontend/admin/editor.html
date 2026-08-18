@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
@@ -147,26 +147,28 @@
     <script src="js/mockDB.js?v=17"></script>
     <script src="js/editor.js?v=17"></script>
     <script>
+        // Função global para pré-visualização, disponível imediatamente
+        window.updateCoverPreview = function(src) {
+            const coverPreviewContainer = document.getElementById('cover-preview-container');
+            if (!coverPreviewContainer) return;
+            
+            if (!src) {
+                coverPreviewContainer.style.display = 'none';
+                return;
+            }
+            const isVideo = src.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(src);
+            if (isVideo) {
+                coverPreviewContainer.innerHTML = `<video src="${src}" controls style="width: 100%; max-height: 250px; display: block; object-fit: cover;" muted autoplay loop></video>`;
+            } else {
+                coverPreviewContainer.innerHTML = `<img src="${src}" alt="Pré-visualização" style="width: 100%; max-height: 250px; display: block; object-fit: cover;">`;
+            }
+            coverPreviewContainer.style.display = 'block';
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             const coverFile = document.getElementById('post-cover-file');
             const coverHidden = document.getElementById('post-cover');
-            const coverPreviewContainer = document.getElementById('cover-preview-container');
             const categorySelect = document.getElementById('post-category');
-
-            // Função para atualizar a pré-visualização da capa (suporta vídeo e imagem)
-            window.updateCoverPreview = function(src) {
-                if (!src) {
-                    coverPreviewContainer.style.display = 'none';
-                    return;
-                }
-                const isVideo = src.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(src);
-                if (isVideo) {
-                    coverPreviewContainer.innerHTML = `<video src="${src}" controls style="width: 100%; max-height: 250px; display: block; object-fit: cover;" muted autoplay loop></video>`;
-                } else {
-                    coverPreviewContainer.innerHTML = `<img src="${src}" alt="Pré-visualização" style="width: 100%; max-height: 250px; display: block; object-fit: cover;">`;
-                }
-                coverPreviewContainer.style.display = 'block';
-            };
 
             // Evento de alteração no ficheiro de capa
             coverFile.addEventListener('change', function() {

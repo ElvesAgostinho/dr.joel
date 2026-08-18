@@ -169,10 +169,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 linguas: getVal('membro-linguas'),
             };
             
+            const submitBtn = form.querySelector('button[type="submit"]');
+            let originalText = 'Guardar Membro';
+            if (submitBtn) {
+                originalText = submitBtn.textContent;
+                submitBtn.textContent = 'A guardar...';
+                submitBtn.disabled = true;
+            }
+            
             MockDB.saveMember(memberData).then(() => {
                 window.location.href = 'equipa.html';
             }).catch(err => {
                 alert('Erro ao guardar membro: ' + err.message);
+                if (submitBtn) {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
             });
         });
     }

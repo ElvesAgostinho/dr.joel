@@ -115,6 +115,10 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = 'A guardar...';
+        saveBtn.disabled = true;
+
         const content = quill.root.innerHTML;
         
         const postData = {
@@ -131,6 +135,8 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = "index.html";
         }).catch(err => {
             alert("Erro ao guardar publicação: " + err.message);
+            saveBtn.textContent = originalText;
+            saveBtn.disabled = false;
         });
     });
 });
