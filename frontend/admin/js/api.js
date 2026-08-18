@@ -37,7 +37,17 @@ function getHeaders(isUpload = false, isPublic = false) {
     return headers;
 }
 
+const apiCache = new Map();
+const CACHE_TTL = 30000; // 30 segundos
+
 async function request(method, path, body, isUpload = false, isPublic = false) {
+    if (method === 'GET') {
+        const cached = apiCache.get(path);
+        if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+            return JSON.parse(JSON.stringify(cached.data));
+        }
+    }
+
     const options = {
         method: method,
         headers: getHeaders(isUpload, isPublic)
@@ -64,10 +74,21 @@ async function request(method, path, body, isUpload = false, isPublic = false) {
         throw new Error(`Erro ${res.status}: Ocorreu um erro ao comunicar com a base de dados.`);
     }
     
-    if (method === 'DELETE' || res.status === 204) return null;
+    if (method === 'DELETE' || res.status === 204) {
+        apiCache.clear();
+        return null;
+    }
     
     const text = await res.text();
-    return text ? JSON.parse(text) : null;
+    const resultData = text ? JSON.parse(text) : null;
+
+    if (method === 'GET') {
+        apiCache.set(path, { timestamp: Date.now(), data: resultData });
+    } else {
+        apiCache.clear();
+    }
+
+    return resultData;
 }
 
 const API = {
@@ -159,8 +180,8 @@ const API = {
 
     // --- EQUIPA ---
     getTeam: async function() {
-        const data = await request('GET', '/team?order=created_at.desc');
-        return data.map(p => ({
+        const data = await request('GET', '/team?order=name.asc');
+        const list = data.map(p => ({
             id: p.id,
             name: p.name,
             role: p.role,
@@ -176,6 +197,7 @@ const API = {
             linguas: p.linguas,
             createdAt: new Date(p.created_at).getTime()
         }));
+        return list.sort((a, b) => a.name.localeCompare(b.name, 'pt-PT'));
     },
 
     getMember: async function(id) {

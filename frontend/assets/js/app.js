@@ -623,13 +623,15 @@ async function openPostModal(id) {
     modal.classList.add('active');
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    // Other existing code...
-    await renderBlogPosts();
-    await renderInsightsPage();
-    await renderArtePage();
-    await renderTeamPage();
-    await renderMemberPage();
+document.addEventListener('DOMContentLoaded', () => {
+    Promise.all([
+        renderBlogPosts(),
+        renderInsightsPage(),
+        renderArtePage(),
+        renderTeamPage(),
+        renderMemberPage()
+    ]).catch(err => console.warn('Render notice:', err));
+
     animateStats();
     initMegaMenuTeam();
 });
