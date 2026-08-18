@@ -11,7 +11,7 @@ function generateUUID() {
     });
 }
 
-function getHeaders(isUpload = false) {
+function getHeaders(isUpload = false, isPublic = false) {
     const headers = {
         'apikey': SUPABASE_ANON_KEY
     };
@@ -21,22 +21,26 @@ function getHeaders(isUpload = false) {
         headers['Prefer'] = 'return=representation';
     }
 
-    const sessionRaw = localStorage.getItem('mj_admin_session');
-    if (sessionRaw) {
-        try {
-            const session = JSON.parse(sessionRaw);
-            if (session && session.access_token) {
-                headers['Authorization'] = 'Bearer ' + session.access_token;
-            }
-        } catch(e) {}
+    if (!isPublic) {
+        const sessionRaw = localStorage.getItem('mj_admin_session');
+        if (sessionRaw) {
+            try {
+                const session = JSON.parse(sessionRaw);
+                if (session && session.expires_at && (Date.now() / 1000) > session.expires_at) {
+                    localStorage.removeItem('mj_admin_session');
+                } else if (session && session.access_token) {
+                    headers['Authorization'] = 'Bearer ' + session.access_token;
+                }
+            } catch(e) {}
+        }
     }
     return headers;
 }
 
-async function request(method, path, body, isUpload = false) {
+async function request(method, path, body, isUpload = false, isPublic = false) {
     const options = {
         method: method,
-        headers: getHeaders(isUpload)
+        headers: getHeaders(isUpload, isPublic)
     };
 
     if (body) {
@@ -46,12 +50,14 @@ async function request(method, path, body, isUpload = false) {
     const res = await fetch(REST_URL + path, options);
     
     if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('mj_admin_session');
-        if (window.location.pathname.includes('/admin/')) {
-            alert('Sessão expirada. Por favor, inicie sessão novamente.');
-            window.location.href = 'login.html';
+        if (!isPublic) {
+            localStorage.removeItem('mj_admin_session');
+            if (window.location.pathname.includes('/admin/')) {
+                alert('Sessão expirada. Por favor, inicie sessão novamente.');
+                window.location.href = 'login.html';
+            }
+            throw new Error('Sessão expirada');
         }
-        throw new Error('Sessão expirada');
     }
     
     if (!res.ok) {
@@ -367,7 +373,7 @@ const API = {
             assunto: contactData.assunto,
             mensagem: contactData.mensagem
         };
-        return await request('POST', '/contacts', payload);
+        return await request('POST', '/contacts', payload, false, true);
     }
 };
 
