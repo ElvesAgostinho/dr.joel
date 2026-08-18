@@ -514,6 +514,9 @@ async function renderBlogPosts() {
                 : `<img src="${art.img}" alt="${art.title}">`)
             : '';
 
+        const plainText = art.content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+        const excerpt = plainText.length > 120 ? plainText.substring(0, 120) + '...' : plainText;
+
         card.innerHTML = `
             <div class="blog-img-wrapper" style="background: #000;">
                 ${mediaHtml}
@@ -521,6 +524,7 @@ async function renderBlogPosts() {
             <div class="blog-card-content">
                 <div class="category">${art.category}</div>
                 <h3>${art.title}</h3>
+                ${excerpt ? `<p class="blog-card-excerpt" style="font-size: 0.95rem; color: #666; margin-bottom: 15px; line-height: 1.6;">${excerpt}</p>` : ''}
                 <div class="date">${art.date}</div>
             </div>
         `;

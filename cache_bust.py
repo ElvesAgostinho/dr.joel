@@ -10,9 +10,9 @@ for root, dirs, files in os.walk(base_dir):
             with open(filepath, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # Increment version to v=21
-            content = re.sub(r'\?v=\d+', '?v=21', content)
+            # Increment version to v=22
+            content = re.sub(r'\?v=\d+', '?v=22', content)
             
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(content)
-print("Cache busted to v=21")
+print("Cache busted to v=22")
