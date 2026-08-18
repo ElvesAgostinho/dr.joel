@@ -103,6 +103,7 @@ const API = {
             title: p.title,
             content: p.content,
             coverImage: p.cover_image,
+            gallery: p.gallery || [],
             published: p.published,
             category: p.category || 'ARTIGO',
             createdAt: new Date(p.created_at).getTime()
@@ -118,6 +119,7 @@ const API = {
             title: p.title,
             content: p.content,
             coverImage: p.cover_image,
+            gallery: p.gallery || [],
             published: p.published,
             category: p.category || 'ARTIGO',
             createdAt: new Date(p.created_at).getTime()
@@ -130,6 +132,7 @@ const API = {
             title: post.title,
             content: post.content,
             cover_image: post.coverImage,
+            gallery: post.gallery || [],
             published: post.published === true || post.published === 'true',
             category: post.category || 'ARTIGO'
         };
@@ -374,6 +377,24 @@ const API = {
             mensagem: contactData.mensagem
         };
         return await request('POST', '/contacts', payload, false, true);
+    },
+
+    getContacts: async function() {
+        const data = await request('GET', '/contacts?order=criado_em.desc');
+        return data.map(row => ({
+            id: row.id,
+            nome: row.nome,
+            email: row.email,
+            telefone: row.telefone,
+            empresa: row.empresa,
+            assunto: row.assunto,
+            mensagem: row.mensagem,
+            createdAt: row.criado_em ? new Date(row.criado_em).getTime() : Date.now()
+        }));
+    },
+
+    deleteContact: async function(id) {
+        return await request('DELETE', `/contacts?id=eq.${id}`);
     }
 };
 

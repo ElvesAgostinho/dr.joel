@@ -74,6 +74,56 @@ document.addEventListener("DOMContentLoaded", async () => {
     const saveBtn = document.getElementById('btn-save');
     const pageTitle = document.getElementById('page-title');
 
+    let currentGallery = [];
+
+    const galleryFileInput = document.getElementById('post-gallery-files');
+    const galleryGrid = document.getElementById('gallery-preview-grid');
+
+    function renderGalleryGrid() {
+        if (!galleryGrid) return;
+        galleryGrid.innerHTML = '';
+        currentGallery.forEach((itemUrl, idx) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.style.cssText = 'position: relative; border-radius: 8px; overflow: hidden; height: 100px; background: #222; border: 1px solid #ddd;';
+
+            const isVideo = itemUrl.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(itemUrl);
+            const mediaTag = isVideo
+                ? `<video src="${itemUrl}" style="width:100%; height:100%; object-fit:cover;" muted></video>`
+                : `<img src="${itemUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+
+            itemDiv.innerHTML = `
+                ${mediaTag}
+                <button type="button" onclick="window.removeGalleryItem(${idx})" style="position: absolute; top: 4px; right: 4px; background: rgba(220, 53, 69, 0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; line-height: 1; display: flex; align-items: center; justify-content: center;">✕</button>
+            `;
+            galleryGrid.appendChild(itemDiv);
+        });
+    }
+
+    window.removeGalleryItem = function(index) {
+        currentGallery.splice(index, 1);
+        renderGalleryGrid();
+    };
+
+    if (galleryFileInput) {
+        galleryFileInput.addEventListener('change', async function() {
+            const files = Array.from(this.files);
+            if (files.length === 0) return;
+
+            for (const file of files) {
+                try {
+                    const url = await API.uploadMedia(file);
+                    if (url) {
+                        currentGallery.push(url);
+                    }
+                } catch(err) {
+                    alert("Erro no upload de ficheiro da galeria: " + err.message);
+                }
+            }
+            renderGalleryGrid();
+            this.value = '';
+        });
+    }
+
     // Load existing post if ID is present
     if (postId) {
         pageTitle.textContent = "Editar Publicação";
@@ -81,6 +131,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (post) {
             titleInput.value = post.title;
             coverInput.value = post.coverImage || '';
+            currentGallery = Array.isArray(post.gallery) ? post.gallery : [];
+            renderGalleryGrid();
             if (post.category) {
                 const cat = post.category.toUpperCase().trim();
                 let optionExists = false;
@@ -126,6 +178,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             title: title,
             category: categoryInput.value,
             coverImage: coverInput.value.trim(),
+            gallery: currentGallery,
             content: content,
             published: publishedCheckbox.checked
         };

@@ -533,18 +533,33 @@ async function renderBlogPosts() {
     });
 }
 
+window.switchModalMedia = function(thumbEl, url) {
+    const isVideo = url.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(url);
+    const wrapper = document.getElementById('modal-main-wrapper');
+    if (!wrapper) return;
+
+    if (isVideo) {
+        wrapper.innerHTML = `<video id="modal-main-media" src="${url}" controls autoplay preload="metadata" style="width: 100%; height: 420px; object-fit: contain; background: #111; border-radius: 8px; display: block;"></video>`;
+    } else {
+        wrapper.innerHTML = `<img id="modal-main-media" src="${url}" style="width: 100%; height: 420px; object-fit: contain; background: #f4f4f4; border-radius: 8px; display: block;">`;
+    }
+
+    const thumbs = document.querySelectorAll('#modal-thumbs-bar img, #modal-thumbs-bar video');
+    thumbs.forEach(t => t.style.borderColor = '#ddd');
+    thumbEl.style.borderColor = 'var(--color-accent)';
+};
+
 async function openPostModal(id) {
     const post = await API.getPost(id);
     if (!post) return;
     
-    // Simple modal implementation for reading full post
     let modal = document.getElementById('post-modal');
     if (!modal) {
         modal = document.createElement("div");
         modal.id = "post-modal";
         modal.className = "modal-overlay";
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; text-align: left; padding: 40px;">
+            <div class="modal-content" style="max-width: 850px; width: 90%; max-height: 90vh; overflow-y: auto; text-align: left; padding: 40px;">
                 <button class="close-modal" onclick="document.getElementById('post-modal').classList.remove('active')" style="position: absolute; right: 20px; top: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
                 <div id="post-modal-body" style="font-family: var(--font-body); color: var(--color-primary);"></div>
             </div>
@@ -555,12 +570,47 @@ async function openPostModal(id) {
     const body = document.getElementById('post-modal-body');
     const date = new Date(post.createdAt).toLocaleDateString('pt-PT');
     
+    // Obter todos os media (capa + galeria de fotos/vídeos)
+    const allMedia = [];
+    if (post.coverImage) allMedia.push(post.coverImage);
+    if (Array.isArray(post.gallery)) {
+        post.gallery.forEach(url => {
+            if (url && !allMedia.includes(url)) allMedia.push(url);
+        });
+    }
+
     let mediaHtml = "";
-    if (post.coverImage) {
-        const isVideo = post.coverImage.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(post.coverImage);
+    if (allMedia.length === 1) {
+        const isVideo = allMedia[0].startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(allMedia[0]);
         mediaHtml = isVideo
-            ? `<video src="${post.coverImage}" controls preload="metadata" style="width: 100%; height: 350px; object-fit: contain; background: #000; border-radius: 8px; margin-bottom: 30px;"></video>`
-            : `<img src="${post.coverImage}" alt="Capa" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 30px;">`;
+            ? `<video src="${allMedia[0]}" controls preload="metadata" style="width: 100%; height: 380px; object-fit: contain; background: #000; border-radius: 8px; margin-bottom: 30px;"></video>`
+            : `<img src="${allMedia[0]}" alt="Capa" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 30px;">`;
+    } else if (allMedia.length > 1) {
+        const mainMedia = allMedia[0];
+        const isMainVideo = mainMedia.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(mainMedia);
+
+        const mainTag = isMainVideo
+            ? `<video id="modal-main-media" src="${mainMedia}" controls preload="metadata" style="width: 100%; height: 420px; object-fit: contain; background: #111; border-radius: 8px; display: block;"></video>`
+            : `<img id="modal-main-media" src="${mainMedia}" style="width: 100%; height: 420px; object-fit: contain; background: #f4f4f4; border-radius: 8px; display: block;">`;
+
+        let thumbsHtml = allMedia.map((url, i) => {
+            const isVid = url.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(url);
+            const thumbTag = isVid
+                ? `<video src="${url}" style="width: 75px; height: 75px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid ${i === 0 ? 'var(--color-accent)' : '#ddd'}; flex-shrink: 0;" onclick="window.switchModalMedia(this, '${url}')" muted></video>`
+                : `<img src="${url}" style="width: 75px; height: 75px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid ${i === 0 ? 'var(--color-accent)' : '#ddd'}; flex-shrink: 0;" onclick="window.switchModalMedia(this, '${url}')">`;
+            return thumbTag;
+        }).join('');
+
+        mediaHtml = `
+            <div style="margin-bottom: 30px;">
+                <div id="modal-main-wrapper" style="margin-bottom: 12px; border-radius: 8px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                    ${mainTag}
+                </div>
+                <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin;" id="modal-thumbs-bar">
+                    ${thumbsHtml}
+                </div>
+            </div>
+        `;
     }
 
     body.innerHTML = `
