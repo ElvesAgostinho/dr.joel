@@ -319,8 +319,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Dynamic Rendering: Expertise ---
     const expertiseContainer = document.getElementById('expertise-container');
-    if (expertiseContainer && typeof MockDB !== 'undefined') {
-        const items = MockDB.getExpertise();
+    if (expertiseContainer && typeof API !== 'undefined') {
+        const items = await API.getExpertise();
         if (items.length > 0) {
             expertiseContainer.innerHTML = '';
             items.forEach(item => {
@@ -382,10 +382,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Dynamic Rendering: Sobre Nós (Institucional) ---
     const sobrenosContainer = document.getElementById('sobrenos-container');
-    if (sobrenosContainer && typeof MockDB !== 'undefined') {
+    if (sobrenosContainer && typeof API !== 'undefined') {
         const pageId = sobrenosContainer.getAttribute('data-page');
         if (pageId) {
-            const pageData = MockDB.getSobreNosPage(pageId);
+            const pageData = await API.getSobreNosPage(pageId);
             if (pageData) {
                 // Remove the "Página em Atualização" title
                 const headerSection = document.querySelector('.sub-header h1');
@@ -477,7 +477,7 @@ function initParticleAnimation() {
     animate();
 }
 
-function renderBlogPosts() {
+async function renderBlogPosts() {
     const container = document.getElementById('public-blog-container');
     if (!container) return;
 
@@ -485,8 +485,8 @@ function renderBlogPosts() {
 
     // Fonte única: MockDB (sincronizado com Supabase via localStorage)
     let articles = [];
-    if (typeof MockDB !== 'undefined') {
-        articles = MockDB.getPosts()
+    if (typeof API !== 'undefined') {
+        articles = await API.getPosts()
             .filter(p => p.published)
             .map(p => ({
                 id: p.id,
@@ -529,8 +529,8 @@ function renderBlogPosts() {
     });
 }
 
-function openPostModal(id) {
-    const post = MockDB.getPost(id);
+async function openPostModal(id) {
+    const post = await API.getPost(id);
     if (!post) return;
     
     // Simple modal implementation for reading full post
@@ -581,11 +581,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Arte Page Logic
-function renderArtePage() {
+async function renderArtePage() {
     const container = document.getElementById('arte-page-container');
-    if (!container || typeof MockDB === 'undefined') return;
+    if (!container || typeof API === 'undefined') return;
 
-    const artes = MockDB.getArtes();
+    const artes = await API.getArtes();
     container.innerHTML = '';
 
     if (artes.length === 0) {
@@ -616,19 +616,19 @@ function renderArtePage() {
 }
 
 // Member Page Logic
-function renderMemberPage() {
+async function renderMemberPage() {
     const memberNameEl = document.getElementById('member-name');
     if (!memberNameEl) return; // Only run on membro.html
 
     const urlParams = new URLSearchParams(window.location.search);
     const memberId = urlParams.get('id');
 
-    if (!memberId || !window.MockDB) {
+    if (!memberId || !window.API) {
         memberNameEl.textContent = "Membro não encontrado";
         return;
     }
 
-    const member = MockDB.getMember(memberId);
+    const member = await API.getMember(memberId);
     if (!member) {
         memberNameEl.textContent = "Membro não encontrado";
         return;
@@ -686,7 +686,7 @@ function renderMemberPage() {
 
 function renderInsightsPage(categoryFilter = null) {
     const container = document.getElementById('insights-page-container');
-    if (!container || typeof MockDB === 'undefined') return;
+    if (!container || typeof API === 'undefined') return;
 
     if (!categoryFilter || typeof categoryFilter !== 'string') {
         const urlParams = new URLSearchParams(window.location.search);
@@ -696,7 +696,7 @@ function renderInsightsPage(categoryFilter = null) {
     // Gerar dinamicamente as categorias na sub-navegação caso o container exista
     const subnavContainer = document.querySelector('.insights-subnav');
     if (subnavContainer) {
-        const allPosts = MockDB.getPosts().filter(p => p.published);
+        const allPosts = await API.getPosts().filter(p => p.published);
         const categoriesSet = new Set();
         categoriesSet.add('TODOS');
         allPosts.forEach(p => {
@@ -726,7 +726,7 @@ function renderInsightsPage(categoryFilter = null) {
         });
     }
 
-    let posts = MockDB.getPosts().filter(p => p.published);
+    let posts = await API.getPosts().filter(p => p.published);
     if (categoryFilter !== 'TODOS') {
         posts = posts.filter(p => (p.category || 'ARTIGO').toUpperCase() === categoryFilter.toUpperCase());
     }
@@ -782,9 +782,9 @@ window.filterInsights = function(category, event) {
     renderInsightsPage(category);
 }
 
-function animateStats() {
-    if (typeof MockDB === 'undefined') return;
-    const stats = MockDB.getStats();
+async function animateStats() {
+    if (typeof API === 'undefined') return;
+    const stats = await API.getStats();
     
     const elements = {
         pessoas: document.getElementById('stat-pessoas'),
@@ -832,7 +832,7 @@ function animateStats() {
 // Equipa Page Logic
 let activeLetter = null;
 
-function renderTeamPage() {
+async function renderTeamPage() {
     const container = document.getElementById('team-page-container');
     const filterContainer = document.getElementById('alphabet-filter-container');
     const searchInput = document.getElementById('team-search-input');
@@ -892,7 +892,7 @@ function renderTeamMembers(searchQuery = '') {
 
     container.innerHTML = "";
     
-    const teamMembers = window.MockDB ? MockDB.getTeam() : [];
+    const teamMembers = window.API ? await API.getTeam() : [];
     
     let filtered = teamMembers;
     
@@ -936,8 +936,8 @@ function renderTeamMembers(searchQuery = '') {
 function initMegaMenuTeam() {
     // Dynamic Stats
     const statsElements = document.querySelectorAll('.mega-menu-content .team-stats');
-    if (typeof MockDB !== 'undefined' && statsElements.length > 0) {
-        const teamCount = MockDB.getTeam().length;
+    if (typeof API !== 'undefined' && statsElements.length > 0) {
+        const teamCount = await API.getTeam().length;
         statsElements.forEach(el => {
             el.innerHTML = `<span class="text-accent">${teamCount} profissionais</span> focados na excelência e rigor jurídico`;
         });

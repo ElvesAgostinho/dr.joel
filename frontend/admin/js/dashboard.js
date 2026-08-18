@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderPosts() {
         if (!tbody) return;
-        const posts = MockDB.getPosts();
+        const posts = await API.getPosts();
         tbody.innerHTML = "";
 
         if (posts.length === 0) {
@@ -33,8 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // FIX: Esperar pela Promise antes de re-renderizar
-    window.togglePublish = function togglePublish(id) {
-        MockDB.togglePublish(id).then(function() {
+    window.togglePublish = async function togglePublish(id) {
+        API.togglePublish(id).then(function() {
             renderPosts();
         }).catch(function(err) {
             alert('Erro ao alterar estado: ' + err.message);
@@ -42,9 +42,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // FIX: Esperar pela Promise antes de re-renderizar
-    window.deletePost = function deletePost(id) {
+    window.deletePost = async function deletePost(id) {
         if (confirm('Tem a certeza que deseja eliminar esta publicação?')) {
-            MockDB.deletePost(id).then(function() {
+            API.deletePost(id).then(function() {
                 renderPosts();
             }).catch(function(err) {
                 alert('Erro ao eliminar publicação: ' + err.message);
@@ -55,14 +55,14 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPosts();
 
     // Re-renderizar se a BD for atualizada em segundo plano
-    window.addEventListener('mj:db-updated', function(e) {
+    // window.addEventListener('mj:db-updated', function(e) {
         if (e.detail && e.detail.key === 'mj_blog_posts') {
             renderPosts();
         }
     });
 
     // Stats Management
-    const stats = MockDB.getStats();
+    const stats = await API.getStats();
     const statPessoas = document.getElementById('stat-input-pessoas');
     const statAdvogados = document.getElementById('stat-input-advogados');
     const statJurisdicoes = document.getElementById('stat-input-jurisdicoes');
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 advogados: parseInt(statAdvogados.value) || 0,
                 jurisdicoes: parseInt(statJurisdicoes.value) || 0
             };
-            MockDB.saveStats(newStats);
+            API.saveStats(newStats);
             alert("Estatísticas atualizadas com sucesso! As alterações já estão visíveis na página inicial.");
         });
     }

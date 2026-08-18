@@ -63,7 +63,7 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <script src="js/mockDB.js?v=17"></script>
+    <script src="js/api.js?v=17"></script>
     <script>
         // FIX: Inicializar Quill imediatamente (script no fim do body, DOM já está pronto)
         var quill = new Quill('#quill-editor', {
@@ -98,15 +98,10 @@
             previewContainer.style.display = 'block';
         }
 
-        imageFile.addEventListener('change', function() {
+        imageFile.addEventListener('change', async function() {
             var file = this.files[0];
             if (file) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    imageHidden.value = e.target.result;
-                    updateArtePreview(e.target.result);
-                };
-                reader.readAsDataURL(file);
+                try { const url = await API.uploadMedia(file); imageHidden.value = url; updateArtePreview(url); } catch (err) { alert("Erro: " + err.message); }
             }
         });
 
@@ -116,7 +111,7 @@
 
         if (arteId) {
             document.getElementById('editor-title').textContent = 'Editar Peça de Arte';
-            var arte = MockDB.getArte(arteId);
+            var arte = await API.getArte(arteId);
             if (arte) {
                 document.getElementById('arte-id').value = arte.id;
                 document.getElementById('arte-title').value = arte.title;
@@ -124,18 +119,7 @@
                 updateArtePreview(arte.image);
                 // FIX: quill já existe aqui — carregar conteúdo existente
                 quill.root.innerHTML = arte.description || '';
-            } else {
-                // Aguardar sincronização se os dados ainda não chegaram
-                window.addEventListener('mj:db-updated', function(e) {
-                    if (e.detail && e.detail.key === 'mj_artes') {
-                        var a = MockDB.getArte(arteId);
-                        if (a) {
-                            document.getElementById('arte-id').value = a.id;
-                            document.getElementById('arte-title').value = a.title;
-                            document.getElementById('arte-image').value = a.image || '';
-                            updateArtePreview(a.image);
-                            quill.root.innerHTML = a.description || '';
-                        }
+            
                     }
                 }, { once: true });
             }
@@ -170,7 +154,7 @@
                 description: description
             };
 
-            MockDB.saveArte(arteData).then(function() {
+            API.saveArte(arteData).then(function() {
                 alert('Peça de arte guardada com sucesso!');
                 window.location.href = 'artes.html';
             }).catch(function(err) {

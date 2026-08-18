@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
         input.setAttribute('accept', 'image/*');
         input.click();
 
-        input.onchange = () => {
+        input.onchange = async () => {
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
         input.setAttribute('accept', 'video/*');
         input.click();
 
-        input.onchange = () => {
+        input.onchange = async () => {
             const file = input.files[0];
             if (file) {
                 if (file.size > 20 * 1024 * 1024) { // Limit to 20MB
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Load existing post if ID is present
     if (postId) {
         pageTitle.textContent = "Editar Publicação";
-        const post = MockDB.getPost(postId);
+        const post = await API.getPost(postId);
         if (post) {
             titleInput.value = post.title;
             coverInput.value = post.coverImage || '';
@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
             published: publishedCheckbox.checked
         };
 
-        MockDB.savePost(postData).then(() => {
+        API.savePost(postData).then(() => {
             alert("Publicação guardada com sucesso!");
             window.location.href = "index.html";
         }).catch(err => {

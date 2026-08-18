@@ -144,7 +144,7 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <script src="js/mockDB.js?v=17"></script>
+    <script src="js/api.js?v=17"></script>
     <script src="js/editor.js?v=17"></script>
     <script>
         // Função global para pré-visualização, disponível imediatamente
@@ -171,15 +171,10 @@
             const categorySelect = document.getElementById('post-category');
 
             // Evento de alteração no ficheiro de capa
-            coverFile.addEventListener('change', function() {
+            coverFile.addEventListener('change', async function() {
                 const file = this.files[0];
                 if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        coverHidden.value = e.target.result;
-                        window.updateCoverPreview(e.target.result);
-                    };
-                    reader.readAsDataURL(file);
+                    try { const url = await API.uploadMedia(file); coverHidden.value = url; window.updateCoverPreview(url); } catch(err) { alert("Erro de upload: " + err.message); }
                 }
             });
 

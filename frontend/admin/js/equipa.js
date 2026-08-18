@@ -1,9 +1,9 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // --- List Page Logic ---
     const tableBody = document.getElementById('equipa-table-body');
     if (tableBody) {
-        function renderTable() {
-            const items = MockDB.getTeam();
+        async function renderTable() {
+            const items = await API.getTeam();
             tableBody.innerHTML = '';
             
             if (items.length === 0) {
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         window.deleteMembro = function(id) {
             if (confirm('Tem a certeza que deseja eliminar este membro?')) {
-                MockDB.deleteMember(id).then(() => {
+                API.deleteMember(id).then(() => {
                     renderTable();
                 }).catch(err => {
                     alert('Erro ao eliminar membro: ' + err.message);
@@ -52,18 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const photoPreviewWrapper = document.getElementById('photo-preview-wrapper');
 
         if (photoFile) {
-            photoFile.addEventListener('change', function() {
+            photoFile.addEventListener('change', async function() {
                 const file = this.files[0];
                 if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        photoHidden.value = e.target.result;
-                        if (photoPreview && photoPreviewWrapper) {
-                            photoPreview.src = e.target.result;
-                            photoPreviewWrapper.style.display = 'block';
-                        }
-                    };
-                    reader.readAsDataURL(file);
+                    try { const url = await API.uploadMedia(file); photoHidden.value = url; if (photoPreview && photoPreviewWrapper) { photoPreview.src = url; photoPreviewWrapper.style.display = "block"; } } catch(err) { alert("Erro no upload da foto: " + err.message); }
                 }
             });
         }
@@ -71,14 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const cvFile = document.getElementById('membro-cv-file');
         const cvHidden = document.getElementById('membro-cv');
         if (cvFile) {
-            cvFile.addEventListener('change', function() {
+            cvFile.addEventListener('change', async function() {
                 const file = this.files[0];
                 if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        cvHidden.value = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
+                    try { const url = await API.uploadMedia(file); cvHidden.value = url; alert("CV carregado com sucesso!"); } catch(err) { alert("Erro no upload do CV: " + err.message); }
                 }
             });
         }
@@ -90,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const editorTitle = document.getElementById('editor-title');
             if (editorTitle) editorTitle.textContent = 'Editar Membro';
             
-            const item = MockDB.getMember(editId);
+            const item = await API.getMember(editId);
             if (item) {
                 const setVal = (id, val) => {
                     const el = document.getElementById(id);
@@ -177,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitBtn.disabled = true;
             }
             
-            MockDB.saveMember(memberData).then(() => {
+            API.saveMember(memberData).then(() => {
                 window.location.href = 'equipa.html';
             }).catch(err => {
                 alert('Erro ao guardar membro: ' + err.message);

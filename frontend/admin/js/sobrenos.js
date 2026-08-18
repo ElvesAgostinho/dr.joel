@@ -2,18 +2,18 @@ document.addEventListener('DOMContentLoaded', () => {
     renderSobreNosTable();
 
     // Re-renderizar se a BD for atualizada em segundo plano
-    window.addEventListener('mj:db-updated', function(e) {
+    // window.addEventListener('mj:db-updated', function(e) {
         if (e.detail && e.detail.key === 'mj_sobrenos') {
             renderSobreNosTable();
         }
     });
 });
 
-function renderSobreNosTable() {
+async function renderSobreNosTable() {
     const tbody = document.getElementById('sobrenos-tbody');
-    if (!tbody || typeof MockDB === 'undefined') return;
+    if (!tbody || typeof API === 'undefined') return;
 
-    const pages = MockDB.getSobreNosPages();
+    const pages = await API.getSobreNosPages();
     tbody.innerHTML = '';
 
     if (pages.length === 0) {

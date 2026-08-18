@@ -2,18 +2,18 @@ document.addEventListener('DOMContentLoaded', () => {
     renderExpertiseTable();
 
     // Re-renderizar se a BD for atualizada em segundo plano
-    window.addEventListener('mj:db-updated', function(e) {
+    // window.addEventListener('mj:db-updated', function(e) {
         if (e.detail && e.detail.key === 'mj_expertise') {
             renderExpertiseTable();
         }
     });
 });
 
-function renderExpertiseTable() {
+async function renderExpertiseTable() {
     const tbody = document.getElementById('expertise-tbody');
-    if (!tbody || typeof MockDB === 'undefined') return;
+    if (!tbody || typeof API === 'undefined') return;
 
-    const items = MockDB.getExpertise();
+    const items = await API.getExpertise();
     tbody.innerHTML = '';
 
     if (items.length === 0) {
@@ -42,9 +42,9 @@ function editExpertise(id) {
 }
 
 // FIX: Esperar pela Promise antes de re-renderizar
-function deleteExpertise(id) {
+async function deleteExpertise(id) {
     if (confirm('Tem a certeza que deseja eliminar esta área de prática?')) {
-        MockDB.deleteExpertiseItem(id).then(function() {
+        API.deleteExpertiseItem(id).then(function() {
             renderExpertiseTable();
         }).catch(function(err) {
             alert('Erro ao eliminar: ' + err.message);

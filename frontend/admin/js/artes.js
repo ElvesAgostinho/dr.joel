@@ -2,18 +2,18 @@ document.addEventListener('DOMContentLoaded', () => {
     renderArtesTable();
 
     // Re-renderizar se a BD for atualizada em segundo plano
-    window.addEventListener('mj:db-updated', function(e) {
+    // window.addEventListener('mj:db-updated', function(e) {
         if (e.detail && e.detail.key === 'mj_artes') {
             renderArtesTable();
         }
     });
 });
 
-function renderArtesTable() {
+async function renderArtesTable() {
     const tbody = document.getElementById('artes-tbody');
-    if (!tbody || typeof MockDB === 'undefined') return;
+    if (!tbody || typeof API === 'undefined') return;
 
-    const artes = MockDB.getArtes();
+    const artes = await API.getArtes();
     tbody.innerHTML = '';
 
     if (artes.length === 0) {
@@ -51,9 +51,9 @@ function editArte(id) {
 }
 
 // FIX: Esperar pela Promise antes de re-renderizar
-function deleteArte(id) {
+async function deleteArte(id) {
     if (confirm('Tem a certeza que deseja eliminar esta obra de arte?')) {
-        MockDB.deleteArte(id).then(function() {
+        API.deleteArte(id).then(function() {
             renderArtesTable();
         }).catch(function(err) {
             alert('Erro ao eliminar: ' + err.message);
