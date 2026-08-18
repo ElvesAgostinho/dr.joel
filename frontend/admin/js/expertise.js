@@ -1,15 +1,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    renderExpertiseTable();
-
-    // Re-renderizar se a BD for atualizada em segundo plano
-    
+    await renderExpertiseTable();
 });
 
 async function renderExpertiseTable() {
     const tbody = document.getElementById('expertise-tbody');
     if (!tbody || typeof API === 'undefined') return;
 
-    const items = API.getExpertise();
+    const items = await API.getExpertise();
     tbody.innerHTML = '';
 
     if (items.length === 0) {
@@ -37,13 +34,13 @@ function editExpertise(id) {
     window.location.href = `editor-expertise.html?id=${id}`;
 }
 
-// FIX: Esperar pela Promise antes de re-renderizar
 async function deleteExpertise(id) {
     if (confirm('Tem a certeza que deseja eliminar esta área de prática?')) {
-        API.deleteExpertiseItem(id).then(function() {
-            renderExpertiseTable();
-        }).catch(function(err) {
+        try {
+            await API.deleteExpertise(id);
+            await renderExpertiseTable();
+        } catch (err) {
             alert('Erro ao eliminar: ' + err.message);
-        });
+        }
     }
 }

@@ -34,21 +34,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // FIX: Esperar pela Promise antes de re-renderizar
     window.togglePublish = async function togglePublish(id) {
-        API.togglePublish(id).then(function() {
-            renderPosts();
-        }).catch(function(err) {
+        try {
+            await API.togglePublish(id);
+            await await renderPosts();
+        } catch (err) {
             alert('Erro ao alterar estado: ' + err.message);
-        });
+        }
     };
 
     // FIX: Esperar pela Promise antes de re-renderizar
     window.deletePost = async function deletePost(id) {
         if (confirm('Tem a certeza que deseja eliminar esta publicação?')) {
-            API.deletePost(id).then(function() {
-                renderPosts();
-            }).catch(function(err) {
+            try {
+                await API.deletePost(id);
+                await renderPosts();
+            } catch (err) {
                 alert('Erro ao eliminar publicação: ' + err.message);
-            });
+            }
         }
     };
 

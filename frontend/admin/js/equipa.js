@@ -28,13 +28,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
         
-        window.deleteMembro = function(id) {
+        window.deleteMembro = async function(id) {
             if (confirm('Tem a certeza que deseja eliminar este membro?')) {
-                API.deleteMember(id).then(() => {
-                    renderTable();
-                }).catch(err => {
+                try {
+                    await API.deleteMember(id);
+                    await await renderTable();
+                } catch (err) {
                     alert('Erro ao eliminar membro: ' + err.message);
-                });
+                }
             }
         };
         

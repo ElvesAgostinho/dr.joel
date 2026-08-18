@@ -73,23 +73,26 @@
         });
 
         // Carregar dados se estiver em modo de edição
-        var urlParams = new URLSearchParams(window.location.search);
-        var expId = urlParams.get('id');
+        async function initPage() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var expId = urlParams.get('id');
 
-        if (expId) {
-            document.getElementById('editor-title').textContent = 'Editar Área de Prática';
-            var exp = await API.getExpertiseItem(expId);
-            if (exp) {
-                document.getElementById('exp-id').value = exp.id;
-                document.getElementById('exp-title').value = exp.title;
-                document.getElementById('exp-desc').value = exp.description || '';
-                // FIX: quill já existe aqui — carregar conteúdo existente
-                quill.root.innerHTML = exp.description || '';
-            
+            if (expId) {
+                document.getElementById('editor-title').textContent = 'Editar Área de Prática';
+                try {
+                    var exp = await API.getExpertiseItem(expId);
+                    if (exp) {
+                        document.getElementById('exp-id').value = exp.id;
+                        document.getElementById('exp-title').value = exp.title;
+                        document.getElementById('exp-desc').value = exp.description || '';
+                        quill.root.innerHTML = exp.description || '';
                     }
-                }, { once: true });
+                } catch (err) {
+                    alert('Erro ao carregar dados: ' + err.message);
+                }
             }
         }
+        initPage();
 
         document.getElementById('btn-save-exp').addEventListener('click', function() {
             var title = document.getElementById('exp-title').value.trim();
@@ -121,7 +124,7 @@
                 description: description
             };
 
-            API.saveExpertiseItem(expData).then(function() {
+            API.saveExpertise(expData).then(function() {
                 alert('Área de Prática guardada com sucesso!');
                 window.location.href = 'gestao-expertise.html';
             }).catch(function(err) {

@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    renderArtesTable();
+    await renderArtesTable();
 
     // Re-renderizar se a BD for atualizada em segundo plano
     
@@ -49,10 +49,11 @@ function editArte(id) {
 // FIX: Esperar pela Promise antes de re-renderizar
 async function deleteArte(id) {
     if (confirm('Tem a certeza que deseja eliminar esta obra de arte?')) {
-        API.deleteArte(id).then(function() {
-            renderArtesTable();
-        }).catch(function(err) {
+        try {
+            await API.deleteArte(id);
+            await renderArtesTable();
+        } catch (err) {
             alert('Erro ao eliminar: ' + err.message);
-        });
+        }
     }
 }

@@ -77,35 +77,28 @@
         var urlParams = new URLSearchParams(window.location.search);
         var pageId = urlParams.get('id');
 
-        if (!pageId) {
-            alert("Nenhuma página selecionada.");
-            window.location.href = 'gestao-sobrenos.html';
-        } else {
-            var page = API.getSobreNosPage(pageId);
-            if (page) {
-                document.getElementById('sobrenos-id').value = page.id;
-                document.getElementById('sobrenos-title').value = page.title;
-                document.getElementById('sobrenos-content').value = page.content || '';
-                // FIX: quill já existe aqui porque foi inicializado acima
-                quill.root.innerHTML = page.content || '';
-            } else {
-                // Pode ser que os dados ainda não tenham sincronizado — aguardar evento
-                window.addEventListener('mj:db-updated', function(e) {
-                    if (e.detail && e.detail.key === 'mj_sobrenos') {
-                        var p = API.getSobreNosPage(pageId);
-                        if (p) {
-                            document.getElementById('sobrenos-id').value = p.id;
-                            document.getElementById('sobrenos-title').value = p.title;
-                            document.getElementById('sobrenos-content').value = p.content || '';
-                            quill.root.innerHTML = p.content || '';
-                        } else {
-                            alert("Página não encontrada!");
-                            window.location.href = 'gestao-sobrenos.html';
-                        }
-                    }
-                }, { once: true });
+        async function initPage() {
+            if (!pageId) {
+                alert("Nenhuma página selecionada.");
+                window.location.href = 'gestao-sobrenos.html';
+                return;
+            }
+            try {
+                var page = await API.getSobreNosPage(pageId);
+                if (page) {
+                    document.getElementById('sobrenos-id').value = page.id;
+                    document.getElementById('sobrenos-title').value = page.title;
+                    document.getElementById('sobrenos-content').value = page.content || '';
+                    quill.root.innerHTML = page.content || '';
+                } else {
+                    alert("Página não encontrada!");
+                    window.location.href = 'gestao-sobrenos.html';
+                }
+            } catch (err) {
+                alert("Erro ao carregar página: " + err.message);
             }
         }
+        initPage();
 
         document.getElementById('btn-save-sobrenos').addEventListener('click', function() {
             // FIX: Sincronizar o Quill para o hidden input antes de ler
