@@ -510,12 +510,12 @@ async function renderBlogPosts() {
         const isVideo = art.img && (art.img.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(art.img));
         const mediaHtml = art.img
             ? (isVideo
-                ? `<video src="${art.img}" style="width: 100%; height: 100%; object-fit: cover;" muted autoplay loop></video>`
+                ? `<video src="${art.img}" controls preload="metadata" style="width: 100%; height: 100%; object-fit: contain; background: #000;"></video>`
                 : `<img src="${art.img}" alt="${art.title}">`)
             : '';
 
         card.innerHTML = `
-            <div class="blog-img-wrapper">
+            <div class="blog-img-wrapper" style="background: #000;">
                 ${mediaHtml}
             </div>
             <div class="blog-card-content">
@@ -555,7 +555,7 @@ async function openPostModal(id) {
     if (post.coverImage) {
         const isVideo = post.coverImage.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(post.coverImage);
         mediaHtml = isVideo
-            ? `<video src="${post.coverImage}" controls style="width: 100%; height: 350px; object-fit: cover; border-radius: 8px; margin-bottom: 30px;" autoplay muted loop></video>`
+            ? `<video src="${post.coverImage}" controls preload="metadata" style="width: 100%; height: 350px; object-fit: contain; background: #000; border-radius: 8px; margin-bottom: 30px;"></video>`
             : `<img src="${post.coverImage}" alt="Capa" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 30px;">`;
     }
 
@@ -755,7 +755,7 @@ async function renderInsightsPage(categoryFilter = null) {
         
         const isVideo = bgImage.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(bgImage);
         const mediaHtml = isVideo
-            ? `<div class="card-horizontal-img" style="position:relative; overflow:hidden;"><video src="${bgImage}" style="position:absolute; width:100%; height:100%; object-fit:cover;" muted autoplay loop></video></div>`
+            ? `<div class="card-horizontal-img" style="position:relative; overflow:hidden; background: #000;"><video src="${bgImage}" controls preload="metadata" style="position:absolute; width:100%; height:100%; object-fit:contain;"></video></div>`
             : `<div class="card-horizontal-img" style="background-image: url('${bgImage}');"></div>`;
 
         card.innerHTML = `
