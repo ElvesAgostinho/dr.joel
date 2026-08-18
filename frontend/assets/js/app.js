@@ -600,19 +600,33 @@ async function renderArtePage() {
     artes.forEach(arte => {
         const card = document.createElement('div');
         card.className = 'art-card';
-        card.style.cssText = 'border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s; cursor: pointer; display: flex; flex-direction: column;';
+        card.style.cssText = 'border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.06); transition: all 0.3s ease; cursor: pointer; display: flex; flex-direction: column; border: 1px solid #eaeaea;';
         
+        // Efeito de elevação ao passar o rato (Hover)
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-8px)';
+            card.style.boxShadow = '0 12px 30px rgba(0,0,0,0.12)';
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'none';
+            card.style.boxShadow = '0 4px 20px rgba(0,0,0,0.06)';
+        });
+
         // Detectar se é vídeo ou imagem pelo data URI ou extensão
         const isVideo = (arte.image && (arte.image.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(arte.image)));
         const mediaHtml = isVideo
-            ? `<video src="${arte.image}" style="width: 100%; height: 250px; object-fit: cover;" controls muted></video>`
-            : `<img src="${arte.image}" alt="${arte.title}" style="width: 100%; height: 250px; object-fit: cover;">`;
+            ? `<video src="${arte.image}" style="max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 5px solid #fff;" controls muted></video>`
+            : `<img src="${arte.image}" alt="${arte.title}" style="max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 5px solid #fff; transition: transform 0.5s ease;">`;
 
         card.innerHTML = `
-            ${mediaHtml}
-            <div style="padding: 20px; text-align: left; flex: 1;">
-                <h3 style="color: var(--color-primary); margin-bottom: 10px; font-size: 1.3rem;">${arte.title}</h3>
-                <p style="color: var(--color-secondary); font-size: 0.95rem; line-height: 1.5;">${arte.description}</p>
+            <div class="art-media-wrapper" style="height: 280px; padding: 25px; background: #f5f6f8; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                ${mediaHtml}
+            </div>
+            <div style="padding: 25px; text-align: left; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <h3 style="font-family: 'Cinzel', serif; color: var(--color-primary); margin: 0 0 10px 0; font-size: 1.25rem; font-weight: 600; letter-spacing: 0.5px; border-bottom: 2px solid var(--color-accent); padding-bottom: 8px; display: inline-block;">${arte.title}</h3>
+                    <p style="color: #555; font-size: 0.95rem; line-height: 1.6; margin: 12px 0 0 0;">${arte.description}</p>
+                </div>
             </div>
         `;
         container.appendChild(card);
