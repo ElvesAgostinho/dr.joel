@@ -37,14 +37,46 @@ function getHeaders(isUpload = false, isPublic = false) {
     return headers;
 }
 
-const apiCache = new Map();
-const CACHE_TTL = 30000; // 30 segundos
+const CACHE_KEY_PREFIX = 'mj_cache_v1_';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos de cache entre navegação de páginas
+
+function getFromCache(path) {
+    try {
+        const raw = sessionStorage.getItem(CACHE_KEY_PREFIX + path);
+        if (!raw) return null;
+        const cached = JSON.parse(raw);
+        if (Date.now() - cached.timestamp < CACHE_TTL) {
+            return cached.data;
+        }
+        sessionStorage.removeItem(CACHE_KEY_PREFIX + path);
+    } catch(e) {}
+    return null;
+}
+
+function setInCache(path, data) {
+    try {
+        sessionStorage.setItem(CACHE_KEY_PREFIX + path, JSON.stringify({
+            timestamp: Date.now(),
+            data: data
+        }));
+    } catch(e) {}
+}
+
+function clearCache() {
+    try {
+        Object.keys(sessionStorage).forEach(key => {
+            if (key.startsWith(CACHE_KEY_PREFIX)) {
+                sessionStorage.removeItem(key);
+            }
+        });
+    } catch(e) {}
+}
 
 async function request(method, path, body, isUpload = false, isPublic = false) {
     if (method === 'GET') {
-        const cached = apiCache.get(path);
-        if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
-            return JSON.parse(JSON.stringify(cached.data));
+        const cachedData = getFromCache(path);
+        if (cachedData !== null) {
+            return JSON.parse(JSON.stringify(cachedData));
         }
     }
 
@@ -75,7 +107,7 @@ async function request(method, path, body, isUpload = false, isPublic = false) {
     }
     
     if (method === 'DELETE' || res.status === 204) {
-        apiCache.clear();
+        clearCache();
         return null;
     }
     
@@ -83,9 +115,9 @@ async function request(method, path, body, isUpload = false, isPublic = false) {
     const resultData = text ? JSON.parse(text) : null;
 
     if (method === 'GET') {
-        apiCache.set(path, { timestamp: Date.now(), data: resultData });
+        setInCache(path, resultData);
     } else {
-        apiCache.clear();
+        clearCache();
     }
 
     return resultData;

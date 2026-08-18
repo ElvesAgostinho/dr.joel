@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
 <head>
+    <link rel="preconnect" href="https://ulymellasjmsejgeutyt.supabase.co" crossorigin>
+    <link rel="dns-prefetch" href="https://ulymellasjmsejgeutyt.supabase.co">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor de Arte - Mário &amp; Joel</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="css/admin.css">
-    <script src="js/auth.js?v=30"></script>
+    <script src="js/auth.js?v=31"></script>
 </head>
 <body>
     <div class="admin-layout">
@@ -64,7 +66,7 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <script src="js/api.js?v=30"></script>
+    <script src="js/api.js?v=31"></script>
     <script>
         // FIX: Inicializar Quill imediatamente (script no fim do body, DOM já está pronto)
         var quill = new Quill('#quill-editor', {
@@ -94,7 +96,7 @@
             if (isVideo) {
                 previewContainer.innerHTML = `<video src="${src}" controls style="width: 100%; max-height: 250px; display: block; object-fit: cover;" muted autoplay loop></video>`;
             } else {
-                previewContainer.innerHTML = `<img src="${src}" alt="Pré-visualização" style="width: 100%; max-height: 250px; display: block; object-fit: cover;">`;
+                previewContainer.innerHTML = `<img loading="lazy" decoding="async" src="${src}" alt="Pré-visualização" style="width: 100%; max-height: 250px; display: block; object-fit: cover;">`;
             }
             previewContainer.style.display = 'block';
         }
