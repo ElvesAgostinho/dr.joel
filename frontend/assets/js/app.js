@@ -699,11 +699,15 @@ async function renderInsightsPage(categoryFilter = null) {
         const allPosts = (await API.getPosts()).filter(p => p.published);
         const categoriesSet = new Set();
         categoriesSet.add('TODOS');
+        categoriesSet.add('NOTÍCIAS & IMPRENSA');
+        categoriesSet.add('EVENTOS');
+        categoriesSet.add('PUBLICAÇÕES');
+        categoriesSet.add('VÍDEO');
+        categoriesSet.add('ARTIGOS');
+        
         allPosts.forEach(p => {
             if (p.category) {
                 categoriesSet.add(p.category.toUpperCase().trim());
-            } else {
-                categoriesSet.add('ARTIGO');
             }
         });
         
