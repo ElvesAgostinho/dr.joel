@@ -483,25 +483,23 @@ function renderBlogPosts() {
 
     container.innerHTML = '';
 
-    // Primary source: articles managed in admin via localStorage
-    let articles = JSON.parse(localStorage.getItem('mj_articles')) || [];
-
-    // Secondary fallback: MockDB (legacy) only if localStorage is empty and MockDB exists
-    if (articles.length === 0 && typeof MockDB !== 'undefined') {
-        const mockPosts = MockDB.getPosts().filter(p => p.published);
-        articles = mockPosts.map((p, i) => ({
-            id: p.id,
-            title: p.title,
-            category: p.category || 'ARTIGO',
-            date: new Date(p.createdAt).toLocaleDateString('pt-PT', {day:'numeric', month:'long', year:'numeric'}),
-            img: p.coverImage || '',
-            content: p.excerpt || ''
-        }));
+    // Fonte única: MockDB (sincronizado com Supabase via localStorage)
+    let articles = [];
+    if (typeof MockDB !== 'undefined') {
+        articles = MockDB.getPosts()
+            .filter(p => p.published)
+            .map(p => ({
+                id: p.id,
+                title: p.title,
+                category: p.category || 'ARTIGO',
+                date: new Date(p.createdAt).toLocaleDateString('pt-PT', {day:'numeric', month:'long', year:'numeric'}),
+                img: p.coverImage || '',
+                content: p.content || ''
+            }));
     }
 
-    // If still empty â show nothing
     if (articles.length === 0) {
-        container.innerHTML = '<p style="color:#999; font-style:italic; padding: 20px 0;">Nenhum artigo publicado de momento. Aceda à  Área de Gestão para adicionar conteúdo.</p>';
+        container.innerHTML = '<p style="color:#999; font-style:italic; padding: 20px 0;">Nenhum artigo publicado de momento.</p>';
         return;
     }
 
@@ -509,13 +507,16 @@ function renderBlogPosts() {
         const card = document.createElement('div');
         card.className = index === 0 ? 'blog-card-large fade-in visible' : 'blog-card-small fade-in visible';
 
+        const isVideo = art.img && (art.img.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(art.img));
+        const mediaHtml = art.img
+            ? (isVideo
+                ? `<video src="${art.img}" style="width: 100%; height: 100%; object-fit: cover;" muted autoplay loop></video>`
+                : `<img src="${art.img}" alt="${art.title}">`)
+            : '';
+
         card.innerHTML = `
             <div class="blog-img-wrapper">
-                ${art.img ? (
-                    (art.img.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(art.img))
-                        ? `<video src="${art.img}" style="width: 100%; height: 100%; object-fit: cover;" muted autoplay loop></video>`
-                        : `<img src="${art.img}" alt="${art.title}">`
-                ) : ''}
+                ${mediaHtml}
             </div>
             <div class="blog-card-content">
                 <div class="category">${art.category}</div>

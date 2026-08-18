@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor de Arte - Mário & Joel</title>
+    <title>Editor de Arte - Mário &amp; Joel</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="css/admin.css">
@@ -12,7 +12,7 @@
 <body>
     <div class="admin-layout">
         <aside class="admin-sidebar">
-            <div class="admin-logo">M&J Admin</div>
+            <div class="admin-logo">M&amp;J Admin</div>
             <nav class="admin-nav">
                 <a href="index.html">Publicações</a>
                 <a href="equipa.html">Equipa</a>
@@ -51,9 +51,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="arte-desc">Descrição / Detalhes</label>
+                        <label>Descrição / Detalhes</label>
                         <div id="quill-editor" style="height: 300px; background: white;"></div>
-                    <input type="hidden" id="arte-desc">
+                        <input type="hidden" id="arte-desc">
                     </div>
 
                     <button type="button" id="btn-save-arte" class="btn btn-primary" style="margin-top: 20px;">Gravar Peça de Arte</button>
@@ -63,84 +63,9 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <script src="js/mockDB.js?v=16"></script>
+    <script src="js/mockDB.js?v=17"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-
-        const imageFile = document.getElementById('arte-image-file');
-        const imageHidden = document.getElementById('arte-image');
-        const previewContainer = document.getElementById('arte-preview-container');
-
-        // Função de pré-visualização para suportar imagem e vídeo
-        function updateArtePreview(src) {
-            if (!src) {
-                previewContainer.style.display = 'none';
-                return;
-            }
-            const isVideo = src.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(src);
-            if (isVideo) {
-                previewContainer.innerHTML = `<video src="${src}" controls style="width: 100%; max-height: 250px; display: block; object-fit: cover;" muted autoplay loop></video>`;
-            } else {
-                previewContainer.innerHTML = `<img src="${src}" alt="Pré-visualização" style="width: 100%; max-height: 250px; display: block; object-fit: cover;">`;
-            }
-            previewContainer.style.display = 'block';
-        }
-        
-        imageFile.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imageHidden.value = e.target.result;
-                    updateArtePreview(e.target.result);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const arteId = urlParams.get('id');
-        
-        if (arteId) {
-            document.getElementById('editor-title').textContent = 'Editar Peça de Arte';
-            const arte = MockDB.getArte(arteId);
-            if (arte) {
-                document.getElementById('arte-id').value = arte.id;
-                document.getElementById('arte-title').value = arte.title;
-                document.getElementById('arte-image').value = arte.image;
-                updateArtePreview(arte.image);
-                quill.root.innerHTML = arte.description || '';
-            }
-        }
-
-            document.getElementById('btn-save-arte').addEventListener('click', () => {
-                const title = document.getElementById('arte-title').value;
-                const image = document.getElementById('arte-image').value;
-                const description = quill.root.innerHTML;
-
-                if (!title || !image || !description) {
-                    alert('Por favor, preencha todos os campos!');
-                    return;
-                }
-
-                const arteData = {
-                    id: document.getElementById('arte-id').value || null,
-                    title: title,
-                    image: image,
-                    description: description
-                };
-
-                MockDB.saveArte(arteData).then(() => {
-                    alert('Peça de arte guardada com sucesso!');
-                    window.location.href = 'artes.html';
-                }).catch(err => {
-                    alert('Erro ao guardar arte: ' + err.message);
-                });
-            });
-        });
-    </script>
-
-    <script>
+        // FIX: Inicializar Quill imediatamente (script no fim do body, DOM já está pronto)
         var quill = new Quill('#quill-editor', {
             theme: 'snow',
             modules: {
@@ -153,6 +78,108 @@
                 ]
             }
         });
-    </script></body>
+
+        // Pré-visualização de imagem/vídeo
+        var imageFile = document.getElementById('arte-image-file');
+        var imageHidden = document.getElementById('arte-image');
+        var previewContainer = document.getElementById('arte-preview-container');
+
+        function updateArtePreview(src) {
+            if (!src) {
+                previewContainer.style.display = 'none';
+                return;
+            }
+            var isVideo = src.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(src);
+            if (isVideo) {
+                previewContainer.innerHTML = `<video src="${src}" controls style="width: 100%; max-height: 250px; display: block; object-fit: cover;" muted autoplay loop></video>`;
+            } else {
+                previewContainer.innerHTML = `<img src="${src}" alt="Pré-visualização" style="width: 100%; max-height: 250px; display: block; object-fit: cover;">`;
+            }
+            previewContainer.style.display = 'block';
+        }
+
+        imageFile.addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    imageHidden.value = e.target.result;
+                    updateArtePreview(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Carregar dados se estiver em modo de edição
+        var urlParams = new URLSearchParams(window.location.search);
+        var arteId = urlParams.get('id');
+
+        if (arteId) {
+            document.getElementById('editor-title').textContent = 'Editar Peça de Arte';
+            var arte = MockDB.getArte(arteId);
+            if (arte) {
+                document.getElementById('arte-id').value = arte.id;
+                document.getElementById('arte-title').value = arte.title;
+                document.getElementById('arte-image').value = arte.image || '';
+                updateArtePreview(arte.image);
+                // FIX: quill já existe aqui — carregar conteúdo existente
+                quill.root.innerHTML = arte.description || '';
+            } else {
+                // Aguardar sincronização se os dados ainda não chegaram
+                window.addEventListener('mj:db-updated', function(e) {
+                    if (e.detail && e.detail.key === 'mj_artes') {
+                        var a = MockDB.getArte(arteId);
+                        if (a) {
+                            document.getElementById('arte-id').value = a.id;
+                            document.getElementById('arte-title').value = a.title;
+                            document.getElementById('arte-image').value = a.image || '';
+                            updateArtePreview(a.image);
+                            quill.root.innerHTML = a.description || '';
+                        }
+                    }
+                }, { once: true });
+            }
+        }
+
+        document.getElementById('btn-save-arte').addEventListener('click', function() {
+            var title = document.getElementById('arte-title').value.trim();
+            var image = document.getElementById('arte-image').value;
+
+            // FIX: Ler descrição diretamente do Quill
+            var description = quill.root.innerHTML;
+            document.getElementById('arte-desc').value = description;
+
+            if (!title) {
+                alert('Por favor, preencha o título!');
+                return;
+            }
+
+            if (!image) {
+                alert('Por favor, selecione uma imagem ou vídeo!');
+                return;
+            }
+
+            var btn = document.getElementById('btn-save-arte');
+            btn.textContent = 'A guardar...';
+            btn.disabled = true;
+
+            var arteData = {
+                id: document.getElementById('arte-id').value || null,
+                title: title,
+                image: image,
+                description: description
+            };
+
+            MockDB.saveArte(arteData).then(function() {
+                alert('Peça de arte guardada com sucesso!');
+                window.location.href = 'artes.html';
+            }).catch(function(err) {
+                alert('Erro ao guardar arte: ' + err.message);
+                btn.textContent = 'Gravar Peça de Arte';
+                btn.disabled = false;
+            });
+        });
+    </script>
+</body>
 
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor Sobre Nós - Mário & Joel</title>
+    <title>Editor Sobre Nós - Mário &amp; Joel</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="css/admin.css">
@@ -12,7 +12,7 @@
 <body>
     <div class="admin-layout">
         <aside class="admin-sidebar">
-            <div class="admin-logo">M&J Admin</div>
+            <div class="admin-logo">M&amp;J Admin</div>
             <nav class="admin-nav">
                 <a href="index.html">Publicações</a>
                 <a href="equipa.html">Equipa</a>
@@ -44,9 +44,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="sobrenos-content">Conteúdo (Suporta HTML básico para formatação)</label>
-                        <div id="quill-editor" style="height: 300px; background: white;"></div>
-                    <input type="hidden" id="sobrenos-content">
+                        <label>Conteúdo (Suporta formatação rica)</label>
+                        <div id="quill-editor" style="height: 350px; background: white;"></div>
+                        <input type="hidden" id="sobrenos-content">
                     </div>
 
                     <button type="button" id="btn-save-sobrenos" class="btn btn-primary" style="margin-top: 20px;">Gravar Alterações</button>
@@ -56,58 +56,10 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <script src="js/mockDB.js?v=16"></script>
+    <script src="js/mockDB.js?v=17"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const pageId = urlParams.get('id');
-            
-            if (pageId) {
-                const page = MockDB.getSobreNosPage(pageId);
-                if (page) {
-                    document.getElementById('sobrenos-id').value = page.id;
-                    document.getElementById('sobrenos-title').value = page.title;
-                    document.getElementById('sobrenos-content').value = page.content;
-                    // Carregar o conteúdo existente no Quill editor visual
-                    quill.root.innerHTML = page.content;
-                } else {
-                    alert("Página não encontrada!");
-                    window.location.href = 'gestao-sobrenos.html';
-                }
-            } else {
-                alert("Nenhuma página selecionada.");
-                window.location.href = 'gestao-sobrenos.html';
-            }
-
-            document.getElementById('btn-save-sobrenos').addEventListener('click', () => {
-                // Sincronizar o conteúdo do Quill para o hidden input antes de ler
-                document.getElementById('sobrenos-content').value = quill.root.innerHTML;
-
-                const title = document.getElementById('sobrenos-title').value;
-                const content = document.getElementById('sobrenos-content').value;
-
-                if (!title || !content) {
-                    alert('Por favor, preencha todos os campos!');
-                    return;
-                }
-
-                const pageData = {
-                    id: document.getElementById('sobrenos-id').value,
-                    title: title,
-                    content: content
-                };
-
-                MockDB.saveSobreNosPage(pageData).then(() => {
-                    alert('Página guardada com sucesso!');
-                    window.location.href = 'gestao-sobrenos.html';
-                }).catch(err => {
-                    alert('Erro ao guardar página: ' + err.message);
-                });
-            });
-        });
-    </script>
-
-    <script>
+        // FIX: Inicializar Quill imediatamente (não dentro de DOMContentLoaded)
+        // O script é diferido até o DOM estar pronto porque está no fim do body
         var quill = new Quill('#quill-editor', {
             theme: 'snow',
             modules: {
@@ -120,6 +72,74 @@
                 ]
             }
         });
-    </script></body>
+
+        // Carregar dados da página
+        var urlParams = new URLSearchParams(window.location.search);
+        var pageId = urlParams.get('id');
+
+        if (!pageId) {
+            alert("Nenhuma página selecionada.");
+            window.location.href = 'gestao-sobrenos.html';
+        } else {
+            var page = MockDB.getSobreNosPage(pageId);
+            if (page) {
+                document.getElementById('sobrenos-id').value = page.id;
+                document.getElementById('sobrenos-title').value = page.title;
+                document.getElementById('sobrenos-content').value = page.content || '';
+                // FIX: quill já existe aqui porque foi inicializado acima
+                quill.root.innerHTML = page.content || '';
+            } else {
+                // Pode ser que os dados ainda não tenham sincronizado — aguardar evento
+                window.addEventListener('mj:db-updated', function(e) {
+                    if (e.detail && e.detail.key === 'mj_sobrenos') {
+                        var p = MockDB.getSobreNosPage(pageId);
+                        if (p) {
+                            document.getElementById('sobrenos-id').value = p.id;
+                            document.getElementById('sobrenos-title').value = p.title;
+                            document.getElementById('sobrenos-content').value = p.content || '';
+                            quill.root.innerHTML = p.content || '';
+                        } else {
+                            alert("Página não encontrada!");
+                            window.location.href = 'gestao-sobrenos.html';
+                        }
+                    }
+                }, { once: true });
+            }
+        }
+
+        document.getElementById('btn-save-sobrenos').addEventListener('click', function() {
+            // FIX: Sincronizar o Quill para o hidden input antes de ler
+            var htmlContent = quill.root.innerHTML;
+            document.getElementById('sobrenos-content').value = htmlContent;
+
+            var title = document.getElementById('sobrenos-title').value.trim();
+            var content = document.getElementById('sobrenos-content').value;
+
+            if (!title) {
+                alert('Por favor, preencha o título!');
+                return;
+            }
+
+            var btn = document.getElementById('btn-save-sobrenos');
+            btn.textContent = 'A guardar...';
+            btn.disabled = true;
+
+            var pageData = {
+                id: document.getElementById('sobrenos-id').value,
+                title: title,
+                content: content
+            };
+
+            MockDB.saveSobreNosPage(pageData).then(function() {
+                alert('Página guardada com sucesso!');
+                window.location.href = 'gestao-sobrenos.html';
+            }).catch(function(err) {
+                alert('Erro ao guardar página: ' + err.message);
+                btn.textContent = 'Gravar Alterações';
+                btn.disabled = false;
+            });
+        });
+    </script>
+</body>
 
 </html>

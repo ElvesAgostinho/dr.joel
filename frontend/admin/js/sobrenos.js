@@ -1,30 +1,39 @@
 document.addEventListener('DOMContentLoaded', () => {
     renderSobreNosTable();
+
+    // Re-renderizar se a BD for atualizada em segundo plano
+    window.addEventListener('mj:db-updated', function(e) {
+        if (e.detail && e.detail.key === 'mj_sobrenos') {
+            renderSobreNosTable();
+        }
+    });
 });
 
 function renderSobreNosTable() {
     const tbody = document.getElementById('sobrenos-tbody');
     if (!tbody || typeof MockDB === 'undefined') return;
-    
+
     const pages = MockDB.getSobreNosPages();
     tbody.innerHTML = '';
-    
+
     if (pages.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhuma página encontrada.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhuma página encontrada. A sincronizar...</td></tr>';
         return;
     }
-    
+
     pages.forEach(page => {
         const tr = document.createElement('tr');
-        const dateStr = new Date(page.lastUpdated).toLocaleDateString('pt-PT', {
-            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
-        
+        const dateStr = page.lastUpdated
+            ? new Date(page.lastUpdated).toLocaleDateString('pt-PT', {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+              })
+            : '—';
+
         tr.innerHTML = `
             <td><strong>${page.title}</strong><br><small style="color: #666;">(${page.id}.html)</small></td>
             <td>${dateStr}</td>
             <td>
-                <button class="btn btn-primary" onclick="editSobreNos('${page.id}')" style="padding: 5px 10px; font-size: 0.8rem;">Editar Página</button>
+                <button class="btn btn-outline" onclick="editSobreNos('${page.id}')" style="padding: 5px 10px; font-size: 0.8rem;">Editar Página</button>
             </td>
         `;
         tbody.appendChild(tr);

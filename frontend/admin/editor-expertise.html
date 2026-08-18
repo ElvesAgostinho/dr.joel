@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor de Área de Prática - Mário & Joel</title>
+    <title>Editor de Área de Prática - Mário &amp; Joel</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="css/admin.css">
@@ -12,7 +12,7 @@
 <body>
     <div class="admin-layout">
         <aside class="admin-sidebar">
-            <div class="admin-logo">M&J Admin</div>
+            <div class="admin-logo">M&amp;J Admin</div>
             <nav class="admin-nav">
                 <a href="index.html">Publicações</a>
                 <a href="equipa.html">Equipa</a>
@@ -44,9 +44,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="exp-desc">Descrição / Texto Principal</label>
+                        <label>Descrição / Texto Principal</label>
                         <div id="quill-editor" style="height: 300px; background: white;"></div>
-                    <input type="hidden" id="exp-desc">
+                        <input type="hidden" id="exp-desc">
                     </div>
 
                     <button type="button" id="btn-save-exp" class="btn btn-primary" style="margin-top: 20px;">Gravar Área de Prática</button>
@@ -56,48 +56,9 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <script src="js/mockDB.js?v=16"></script>
+    <script src="js/mockDB.js?v=17"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const expId = urlParams.get('id');
-            
-            if (expId) {
-                document.getElementById('editor-title').textContent = 'Editar Área de Prática';
-                const exp = MockDB.getExpertiseItem(expId);
-                if (exp) {
-                    document.getElementById('exp-id').value = exp.id;
-                    document.getElementById('exp-title').value = exp.title;
-                    document.getElementById('exp-desc').value = exp.description;
-                }
-            }
-
-            document.getElementById('btn-save-exp').addEventListener('click', () => {
-                const title = document.getElementById('exp-title').value;
-                const description = document.getElementById('exp-desc').value;
-
-                if (!title || !description) {
-                    alert('Por favor, preencha todos os campos!');
-                    return;
-                }
-
-                const expData = {
-                    id: document.getElementById('exp-id').value || null,
-                    title: title,
-                    description: description
-                };
-
-                MockDB.saveExpertiseItem(expData).then(() => {
-                    alert('Área de Prática guardada com sucesso!');
-                    window.location.href = 'gestao-expertise.html';
-                }).catch(err => {
-                    alert('Erro ao guardar Área de Prática: ' + err.message);
-                });
-            });
-        });
-    </script>
-
-    <script>
+        // FIX: Inicializar Quill imediatamente (script no fim do body, DOM já está pronto)
         var quill = new Quill('#quill-editor', {
             theme: 'snow',
             modules: {
@@ -110,6 +71,76 @@
                 ]
             }
         });
-    </script></body>
+
+        // Carregar dados se estiver em modo de edição
+        var urlParams = new URLSearchParams(window.location.search);
+        var expId = urlParams.get('id');
+
+        if (expId) {
+            document.getElementById('editor-title').textContent = 'Editar Área de Prática';
+            var exp = MockDB.getExpertiseItem(expId);
+            if (exp) {
+                document.getElementById('exp-id').value = exp.id;
+                document.getElementById('exp-title').value = exp.title;
+                document.getElementById('exp-desc').value = exp.description || '';
+                // FIX: quill já existe aqui — carregar conteúdo existente
+                quill.root.innerHTML = exp.description || '';
+            } else {
+                // Aguardar sincronização se os dados ainda não chegaram
+                window.addEventListener('mj:db-updated', function(e) {
+                    if (e.detail && e.detail.key === 'mj_expertise') {
+                        var item = MockDB.getExpertiseItem(expId);
+                        if (item) {
+                            document.getElementById('exp-id').value = item.id;
+                            document.getElementById('exp-title').value = item.title;
+                            document.getElementById('exp-desc').value = item.description || '';
+                            quill.root.innerHTML = item.description || '';
+                        }
+                    }
+                }, { once: true });
+            }
+        }
+
+        document.getElementById('btn-save-exp').addEventListener('click', function() {
+            var title = document.getElementById('exp-title').value.trim();
+
+            // FIX: Sincronizar Quill para hidden input ANTES de ler
+            var description = quill.root.innerHTML;
+            document.getElementById('exp-desc').value = description;
+
+            // Verificar se o conteúdo do Quill é apenas vazio (<p><br></p>)
+            var isEmptyContent = quill.getText().trim() === '';
+
+            if (!title) {
+                alert('Por favor, preencha o título!');
+                return;
+            }
+
+            if (isEmptyContent) {
+                alert('Por favor, preencha a descrição!');
+                return;
+            }
+
+            var btn = document.getElementById('btn-save-exp');
+            btn.textContent = 'A guardar...';
+            btn.disabled = true;
+
+            var expData = {
+                id: document.getElementById('exp-id').value || null,
+                title: title,
+                description: description
+            };
+
+            MockDB.saveExpertiseItem(expData).then(function() {
+                alert('Área de Prática guardada com sucesso!');
+                window.location.href = 'gestao-expertise.html';
+            }).catch(function(err) {
+                alert('Erro ao guardar Área de Prática: ' + err.message);
+                btn.textContent = 'Gravar Área de Prática';
+                btn.disabled = false;
+            });
+        });
+    </script>
+</body>
 
 </html>
