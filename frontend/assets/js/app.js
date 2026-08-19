@@ -645,14 +645,14 @@ async function openPostModal(id) {
                             </svg>
                         </div>
                         <div>
-                            <strong style="display: block; font-size: 1.05rem; color: var(--color-primary); margin-bottom: 2px;">Documento Anexo (PDF Grátis)</strong>
+                            <strong style="display: block; font-size: 1.05rem; color: var(--color-primary); margin-bottom: 2px;">Documento Anexo (PDF)</strong>
                             <span style="font-size: 0.85rem; color: #666;">Descarregue a versão integral deste documento em PDF</span>
                         </div>
                     </div>
-                    <button onclick="window.triggerArticlePdf('${post.id}')" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: var(--color-primary); color: #fff; border: none; padding: 12px 22px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='var(--color-accent)'" onmouseout="this.style.background='var(--color-primary)'">
+                    <a href="${post.pdfUrl}" target="_blank" download class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: var(--color-primary); color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; transition: background 0.3s;" onmouseover="this.style.background='var(--color-accent)'" onmouseout="this.style.background='var(--color-primary)'">
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                        Baixar PDF Grátis
-                    </button>
+                        Baixar PDF
+                    </a>
                 </div>
             `;
         }
@@ -674,8 +674,8 @@ window.triggerArticlePdf = async function(postId) {
     if (!post) return;
     if (post.isPaid) {
         openPurchaseModal(post);
-    } else {
-        openLeadModal(post);
+    } else if (post.pdfUrl) {
+        window.open(post.pdfUrl, '_blank');
     }
 };
 
