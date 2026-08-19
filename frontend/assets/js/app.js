@@ -670,7 +670,7 @@ async function openPostModal(id) {
         mediaHtml = isVideo
             ? `<video src="${displayMedia}" controls preload="metadata" style="width: 100%; height: 380px; object-fit: contain; background: #000; border-radius: 10px; margin-bottom: 25px;"></video>`
             : `<div style="position: relative; cursor: zoom-in; margin-bottom: 25px;" onclick="window.openFullscreenImage('${displayMedia}')">
-                 <img src="${displayMedia}" alt="Capa" style="width: 100%; max-height: 460px; object-fit: cover; border-radius: 10px; display: block;">
+                 <img src="${displayMedia}" alt="Capa" style="width: 100%; max-height: 520px; object-fit: contain; background: #f8f9fa; border-radius: 10px; display: block;">
                  <span style="position: absolute; bottom: 15px; right: 15px; background: rgba(0,0,0,0.75); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; pointer-events: none; backdrop-filter: blur(4px);">🔍 Maximizar / Zoom</span>
                </div>`;
     }
@@ -1147,11 +1147,11 @@ async function renderInsightsPage(categoryFilter = null) {
 
     renderInsightsCards(posts);
 }
-
 window.switchCardImage = function(postId, url, thumbEl) {
     const cardImg = document.getElementById(`card-main-img-${postId}`);
     if (cardImg) {
         cardImg.style.backgroundImage = `url('${url}')`;
+        cardImg.setAttribute('onclick', `event.stopPropagation(); event.preventDefault(); window.openFullscreenImage('${url}')`);
     }
     if (thumbEl && thumbEl.parentElement) {
         const thumbs = thumbEl.parentElement.querySelectorAll('div');
@@ -1182,10 +1182,33 @@ function renderInsightsCards(posts) {
         const date = new Date(post.createdAt).toLocaleDateString('pt-PT', {day:'numeric', month:'long', year:'numeric'});
         const category = post.category || 'ARTIGO';
         
+        // Obter todas as fotografias sem duplicações
+        const allMedia = [];
+        if (post.coverImage) allMedia.push(post.coverImage);
+        if (Array.isArray(post.gallery)) {
+            post.gallery.forEach(url => {
+                if (url && !allMedia.includes(url)) allMedia.push(url);
+            });
+        }
+
+        let thumbsOverlayHtml = "";
+        if (allMedia.length > 1) {
+            const thumbsSlice = allMedia.slice(0, 3);
+            const thumbsTags = thumbsSlice.map((url, i) => `
+                <div onclick="event.stopPropagation(); event.preventDefault(); window.switchCardImage('${post.id}', '${url}', this);" title="Ver esta fotografia" style="flex: 1; height: 38px; border-radius: 6px; border: 2px solid ${i === 0 ? 'var(--color-accent)' : '#ffffff'}; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; background-image: url('${url}'); background-size: contain; background-repeat: no-repeat; background-position: center; background-color: #000; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"></div>
+            `).join('');
+
+            thumbsOverlayHtml = `
+                <div style="position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; gap: 6px; z-index: 5;" onclick="event.stopPropagation();">
+                    ${thumbsTags}
+                </div>
+            `;
+        }
+
         const isVideo = bgImage.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(bgImage);
         const mediaHtml = isVideo
-            ? `<div class="card-horizontal-img" style="position:relative; overflow:hidden; background: #000;"><video src="${bgImage}" controls preload="metadata" style="position:absolute; width:100%; height:100%; object-fit:contain;"></video></div>`
-            : `<div class="card-horizontal-img" style="background-image: url('${bgImage}');"></div>`;
+            ? `<div class="card-horizontal-img" style="position:relative; overflow:hidden; background: #000;"><video src="${bgImage}" controls preload="metadata" style="position:absolute; width:100%; height:100%; object-fit:contain;"></video>${thumbsOverlayHtml}</div>`
+            : `<div class="card-horizontal-img" id="card-main-img-${post.id}" style="background-image: url('${bgImage}'); background-size: contain; background-repeat: no-repeat; background-position: center; background-color: #f8f9fa; position: relative; overflow: hidden; cursor: zoom-in;" title="Clique na imagem para Maximizar e Zoom" onclick="event.stopPropagation(); event.preventDefault(); window.openFullscreenImage('${bgImage}')">${thumbsOverlayHtml}</div>`;
 
         let pdfBadge = '';
         let cardAction = '';

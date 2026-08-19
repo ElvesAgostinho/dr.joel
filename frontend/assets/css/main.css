@@ -4224,11 +4224,13 @@ body {
         background: #ffffff !important;
     }
     .card-horizontal-img {
-        height: 220px !important;
+        height: 240px !important;
         width: 100% !important;
         flex: none !important;
-        background-size: cover !important;
+        background-size: contain !important;
+        background-repeat: no-repeat !important;
         background-position: center !important;
+        background-color: #f8f9fa !important;
         border-bottom: 1px solid #f1f5f9 !important;
     }
     .card-horizontal-content {
