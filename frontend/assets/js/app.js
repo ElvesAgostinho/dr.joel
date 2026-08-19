@@ -1107,21 +1107,27 @@ async function renderInsightsPage(categoryFilter = null) {
             : `<div class="card-horizontal-img" style="background-image: url('${bgImage}');"></div>`;
 
         let pdfBadge = '';
+        let cardAction = '';
         if (post.isPaid) {
-            pdfBadge = `<span style="display:inline-flex; align-items:center; gap:4px; background:#e53e3e; color:#fff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:8px;">💵 ${post.price || 'PAGO'}</span>`;
+            pdfBadge = `<span style="display:inline-flex; align-items:center; gap:4px; background:#e53e3e; color:#fff; font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:4px; letter-spacing:0;">💵 ${post.price || 'PAGO'}</span>`;
+            cardAction = `<span style="display:inline-flex; align-items:center; gap:6px; background:#e53e3e; color:#fff; font-size:0.82rem; font-weight:700; padding:6px 14px; border-radius:6px;">🛒 Adquirir (${post.price || 'Pago'})</span>`;
         } else if (post.pdfUrl) {
-            pdfBadge = `<span style="display:inline-flex; align-items:center; gap:4px; background:rgba(197, 168, 128, 0.15); color:var(--color-accent); font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; margin-left:8px;">📄 PDF GRÁTIS</span>`;
+            pdfBadge = `<span style="display:inline-flex; align-items:center; gap:4px; background:rgba(197, 168, 128, 0.15); color:var(--color-accent); font-size:0.75rem; font-weight:600; padding:3px 8px; border-radius:4px; letter-spacing:0;">📄 PDF GRÁTIS</span>`;
+            cardAction = `<span style="display:inline-flex; align-items:center; gap:6px; background:var(--color-primary); color:#fff; font-size:0.82rem; font-weight:600; padding:6px 14px; border-radius:6px;">📄 Baixar PDF</span>`;
         }
 
         card.innerHTML = `
             ${mediaHtml}
             <div class="card-horizontal-content">
-                <div class="category" style="color:var(--color-accent); font-weight:600; display:flex; align-items:center; justify-content:space-between;">
-                    <span>${category}</span>
+                <div class="category" style="color:var(--color-accent); font-weight:600; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                    <span style="letter-spacing:1px; text-transform:uppercase;">${category}</span>
                     ${pdfBadge}
                 </div>
-                <h3>${post.title}</h3>
-                <div class="date">${date}</div>
+                <h3 style="margin-bottom:15px; color:var(--color-primary);">${post.title}</h3>
+                <div style="margin-top:auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <span class="date">${date}</span>
+                    ${cardAction}
+                </div>
             </div>
         `;
         

@@ -4170,3 +4170,59 @@ body {
 
 .lang-switcher:hover .lang-dropdown, .nav-item:hover .lang-dropdown { transform: translateY(0) !important; }
 .lang-dropdown { left: auto !important; right: 0 !important; transform: translateY(20px) !important; }
+
+/* ========================================
+   MOBILE-FIRST & RESPONSIVE ENHANCEMENTS
+   ======================================== */
+.insights-subnav {
+    display: flex !important;
+    gap: 10px !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 10px 5px !important;
+    scrollbar-width: none !important;
+    justify-content: flex-start !important;
+}
+.insights-subnav::-webkit-scrollbar {
+    display: none !important;
+}
+.insights-subnav a {
+    flex-shrink: 0 !important;
+    border-radius: 20px !important;
+    padding: 8px 16px !important;
+    font-size: 0.85rem !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+@media (max-width: 768px) {
+    .card-horizontal {
+        flex-direction: column !important;
+        height: auto !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        margin-bottom: 20px !important;
+    }
+    .card-horizontal-img {
+        height: 200px !important;
+        width: 100% !important;
+        flex: none !important;
+    }
+    .card-horizontal-content {
+        padding: 20px 16px !important;
+    }
+    .card-horizontal-content h3 {
+        font-size: 1.15rem !important;
+        margin-bottom: 12px !important;
+        line-height: 1.4 !important;
+    }
+    .modal-content {
+        padding: 24px 18px !important;
+        max-width: 95% !important;
+        width: 95% !important;
+        border-radius: 12px !important;
+    }
+    #modal-main-media {
+        height: 240px !important;
+    }
+}
