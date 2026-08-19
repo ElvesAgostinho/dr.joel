@@ -533,20 +533,49 @@ async function renderBlogPosts() {
     });
 }
 
-window.switchModalMedia = function(thumbEl, url) {
+window.modalMediaList = [];
+window.modalMediaIdx = 0;
+
+window.updateModalMediaDisplay = function() {
+    if (!window.modalMediaList || window.modalMediaList.length === 0) return;
+    const url = window.modalMediaList[window.modalMediaIdx];
     const isVideo = url.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(url);
     const wrapper = document.getElementById('modal-main-wrapper');
-    if (!wrapper) return;
-
-    if (isVideo) {
-        wrapper.innerHTML = `<video id="modal-main-media" src="${url}" controls autoplay preload="metadata" style="width: 100%; height: 420px; object-fit: contain; background: #111; border-radius: 8px; display: block;"></video>`;
-    } else {
-        wrapper.innerHTML = `<img id="modal-main-media" src="${url}" style="width: 100%; height: 420px; object-fit: contain; background: #f4f4f4; border-radius: 8px; display: block;">`;
+    const counter = document.getElementById('modal-media-counter');
+    
+    if (wrapper) {
+        if (isVideo) {
+            wrapper.innerHTML = `<video id="modal-main-media" src="${url}" controls autoplay preload="metadata" style="width: 100%; height: 440px; object-fit: contain; background: #111; display: block;"></video>`;
+        } else {
+            wrapper.innerHTML = `<img id="modal-main-media" src="${url}" style="width: 100%; height: 440px; object-fit: contain; background: #111; display: block;">`;
+        }
+    }
+    
+    if (counter) {
+        counter.textContent = `📷 ${window.modalMediaIdx + 1} / ${window.modalMediaList.length}`;
     }
 
-    const thumbs = document.querySelectorAll('#modal-thumbs-bar img, #modal-thumbs-bar video');
-    thumbs.forEach(t => t.style.borderColor = '#ddd');
-    thumbEl.style.borderColor = 'var(--color-accent)';
+    const dots = document.querySelectorAll('#modal-media-dots span');
+    dots.forEach((dot, idx) => {
+        if (idx === window.modalMediaIdx) {
+            dot.style.background = '#ffffff';
+            dot.style.transform = 'scale(1.2)';
+        } else {
+            dot.style.background = 'rgba(255, 255, 255, 0.4)';
+            dot.style.transform = 'scale(1)';
+        }
+    });
+};
+
+window.navigateModalMedia = function(direction) {
+    if (!window.modalMediaList || window.modalMediaList.length === 0) return;
+    window.modalMediaIdx = (window.modalMediaIdx + direction + window.modalMediaList.length) % window.modalMediaList.length;
+    window.updateModalMediaDisplay();
+};
+
+window.setModalMediaIndex = function(idx) {
+    window.modalMediaIdx = idx;
+    window.updateModalMediaDisplay();
 };
 
 async function openPostModal(id) {
@@ -579,35 +608,43 @@ async function openPostModal(id) {
         });
     }
 
+    window.modalMediaList = allMedia;
+    window.modalMediaIdx = 0;
+
     let mediaHtml = "";
     if (allMedia.length === 1) {
         const isVideo = allMedia[0].startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(allMedia[0]);
         mediaHtml = isVideo
-            ? `<video src="${allMedia[0]}" controls preload="metadata" style="width: 100%; height: 380px; object-fit: contain; background: #000; border-radius: 8px; margin-bottom: 30px;"></video>`
-            : `<img src="${allMedia[0]}" alt="Capa" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 30px;">`;
+            ? `<video src="${allMedia[0]}" controls preload="metadata" style="width: 100%; height: 400px; object-fit: contain; background: #000; border-radius: 12px; margin-bottom: 30px;"></video>`
+            : `<img src="${allMedia[0]}" alt="Capa" style="width: 100%; max-height: 440px; object-fit: cover; border-radius: 12px; margin-bottom: 30px;">`;
     } else if (allMedia.length > 1) {
         const mainMedia = allMedia[0];
         const isMainVideo = mainMedia.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(mainMedia);
 
         const mainTag = isMainVideo
-            ? `<video id="modal-main-media" src="${mainMedia}" controls preload="metadata" style="width: 100%; height: 420px; object-fit: contain; background: #111; border-radius: 8px; display: block;"></video>`
-            : `<img id="modal-main-media" src="${mainMedia}" style="width: 100%; height: 420px; object-fit: contain; background: #f4f4f4; border-radius: 8px; display: block;">`;
+            ? `<video id="modal-main-media" src="${mainMedia}" controls preload="metadata" style="width: 100%; height: 440px; object-fit: contain; background: #111; display: block;"></video>`
+            : `<img id="modal-main-media" src="${mainMedia}" style="width: 100%; height: 440px; object-fit: contain; background: #111; display: block;">`;
 
-        let thumbsHtml = allMedia.map((url, i) => {
-            const isVid = url.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(url);
-            const thumbTag = isVid
-                ? `<video src="${url}" style="width: 75px; height: 75px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid ${i === 0 ? 'var(--color-accent)' : '#ddd'}; flex-shrink: 0;" onclick="window.switchModalMedia(this, '${url}')" muted></video>`
-                : `<img src="${url}" style="width: 75px; height: 75px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid ${i === 0 ? 'var(--color-accent)' : '#ddd'}; flex-shrink: 0;" onclick="window.switchModalMedia(this, '${url}')">`;
-            return thumbTag;
-        }).join('');
+        let dotsHtml = allMedia.map((_, i) => `
+            <span onclick="window.setModalMediaIndex(${i})" style="width: 10px; height: 10px; border-radius: 50%; background: ${i === 0 ? '#ffffff' : 'rgba(255,255,255,0.4)'}; cursor: pointer; transition: all 0.3s; transform: ${i === 0 ? 'scale(1.2)' : 'scale(1)'}; display: inline-block;"></span>
+        `).join('');
 
         mediaHtml = `
-            <div style="margin-bottom: 30px;">
-                <div id="modal-main-wrapper" style="margin-bottom: 12px; border-radius: 8px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+            <div style="position: relative; margin-bottom: 30px; border-radius: 12px; overflow: hidden; background: #111; box-shadow: 0 8px 30px rgba(0,0,0,0.15);">
+                <div id="modal-media-counter" style="position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.65); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; z-index: 10; backdrop-filter: blur(4px);">
+                    📷 1 / ${allMedia.length}
+                </div>
+                <button onclick="window.navigateModalMedia(-1)" aria-label="Anterior" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; background: rgba(0, 0, 0, 0.55); color: #fff; border: none; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: background 0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.85)'" onmouseout="this.style.background='rgba(0,0,0,0.55)'">
+                    ❮
+                </button>
+                <div id="modal-main-wrapper" style="width: 100%; min-height: 380px; display: flex; align-items: center; justify-content: center; background: #111;">
                     ${mainTag}
                 </div>
-                <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin;" id="modal-thumbs-bar">
-                    ${thumbsHtml}
+                <button onclick="window.navigateModalMedia(1)" aria-label="Seguinte" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; background: rgba(0, 0, 0, 0.55); color: #fff; border: none; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: background 0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.85)'" onmouseout="this.style.background='rgba(0,0,0,0.55)'">
+                    ❯
+                </button>
+                <div id="modal-media-dots" style="position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 15px; backdrop-filter: blur(4px);">
+                    ${dotsHtml}
                 </div>
             </div>
         `;
