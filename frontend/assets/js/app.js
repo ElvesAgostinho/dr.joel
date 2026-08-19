@@ -661,53 +661,18 @@ async function openPostModal(id) {
     const body = document.getElementById('post-modal-body');
     const date = new Date(post.createdAt).toLocaleDateString('pt-PT');
     
-    // Obter todos os ficheiros de media sem duplicar a capa
-    const allMedia = [];
-    if (post.coverImage) allMedia.push(post.coverImage);
-    if (Array.isArray(post.gallery)) {
-        post.gallery.forEach(url => {
-            if (url && !allMedia.includes(url)) allMedia.push(url);
-        });
-    }
+    // Obter imagem de capa principal
+    const displayMedia = post.coverImage || (Array.isArray(post.gallery) && post.gallery.length > 0 ? post.gallery[0] : null);
 
     let mediaHtml = "";
-    if (allMedia.length === 1) {
-        const isVideo = allMedia[0].startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(allMedia[0]);
+    if (displayMedia) {
+        const isVideo = displayMedia.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(displayMedia);
         mediaHtml = isVideo
-            ? `<video src="${allMedia[0]}" controls preload="metadata" style="width: 100%; height: 380px; object-fit: contain; background: #000; border-radius: 10px; margin-bottom: 25px;"></video>`
-            : `<img src="${allMedia[0]}" alt="Capa" style="width: 100%; height: 380px; object-fit: cover; border-radius: 10px; margin-bottom: 25px;">`;
-    } else if (allMedia.length > 1) {
-        const mainMedia = allMedia[0];
-        const isMainVideo = mainMedia.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(mainMedia);
-
-        const mainTag = isMainVideo
-            ? `<video id="modal-main-media" src="${mainMedia}" controls preload="metadata" style="width: 100%; height: 380px; object-fit: contain; background: #000; border-radius: 10px; display: block;"></video>`
-            : `<img id="modal-main-media" src="${mainMedia}" style="width: 100%; height: 380px; object-fit: cover; border-radius: 10px; display: block;">`;
-
-        // Limitar a exatos 3 cartões de miniaturas organizados lado a lado por baixo da foto principal
-        const thumbsSlice = allMedia.slice(0, 3);
-        const thumbsHtml = thumbsSlice.map((url, i) => {
-            const isVid = url.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(url);
-            const mediaItem = isVid
-                ? `<video src="${url}" style="width: 100%; height: 100%; object-fit: cover;" muted></video>`
-                : `<img src="${url}" style="width: 100%; height: 100%; object-fit: cover;">`;
-            return `
-                <div onclick="window.switchModalMedia(this, '${url}')" style="flex: 1; height: 95px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 3px solid ${i === 0 ? 'var(--color-accent)' : 'transparent'}; box-shadow: 0 3px 10px rgba(0,0,0,0.08); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                    ${mediaItem}
-                </div>
-            `;
-        }).join('');
-
-        mediaHtml = `
-            <div style="margin-bottom: 25px;">
-                <div style="margin-bottom: 12px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
-                    ${mainTag}
-                </div>
-                <div id="modal-thumbs-bar" style="display: flex; gap: 12px; margin-top: 10px;">
-                    ${thumbsHtml}
-                </div>
-            </div>
-        `;
+            ? `<video src="${displayMedia}" controls preload="metadata" style="width: 100%; height: 380px; object-fit: contain; background: #000; border-radius: 10px; margin-bottom: 25px;"></video>`
+            : `<div style="position: relative; cursor: zoom-in; margin-bottom: 25px;" onclick="window.openFullscreenImage('${displayMedia}')">
+                 <img src="${displayMedia}" alt="Capa" style="width: 100%; max-height: 460px; object-fit: cover; border-radius: 10px; display: block;">
+                 <span style="position: absolute; bottom: 15px; right: 15px; background: rgba(0,0,0,0.75); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; pointer-events: none; backdrop-filter: blur(4px);">🔍 Maximizar / Zoom</span>
+               </div>`;
     }
 
     let pdfHtml = "";
@@ -1217,33 +1182,10 @@ function renderInsightsCards(posts) {
         const date = new Date(post.createdAt).toLocaleDateString('pt-PT', {day:'numeric', month:'long', year:'numeric'});
         const category = post.category || 'ARTIGO';
         
-        // Obter todas as fotografias/vídeos sem duplicações
-        const allMedia = [];
-        if (post.coverImage) allMedia.push(post.coverImage);
-        if (Array.isArray(post.gallery)) {
-            post.gallery.forEach(url => {
-                if (url && !allMedia.includes(url)) allMedia.push(url);
-            });
-        }
-
-        let thumbsOverlayHtml = "";
-        if (allMedia.length > 1) {
-            const thumbsSlice = allMedia.slice(0, 3);
-            const thumbsTags = thumbsSlice.map((url, i) => `
-                <div onclick="event.stopPropagation(); event.preventDefault(); window.switchCardImage('${post.id}', '${url}', this);" style="flex: 1; height: 42px; border-radius: 6px; border: 2px solid ${i === 0 ? 'var(--color-accent)' : '#ffffff'}; box-shadow: 0 2px 6px rgba(0,0,0,0.35); cursor: pointer; background-image: url('${url}'); background-size: cover; background-position: center; transition: border-color 0.2s, transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"></div>
-            `).join('');
-
-            thumbsOverlayHtml = `
-                <div style="position: absolute; bottom: 10px; left: 10px; right: 10px; display: flex; gap: 8px; z-index: 5;" onclick="event.stopPropagation();">
-                    ${thumbsTags}
-                </div>
-            `;
-        }
-
         const isVideo = bgImage.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(bgImage);
         const mediaHtml = isVideo
-            ? `<div class="card-horizontal-img" style="position:relative; overflow:hidden; background: #000;"><video src="${bgImage}" controls preload="metadata" style="position:absolute; width:100%; height:100%; object-fit:contain;"></video>${thumbsOverlayHtml}</div>`
-            : `<div class="card-horizontal-img" id="card-main-img-${post.id}" style="background-image: url('${bgImage}'); position: relative; overflow: hidden;">${thumbsOverlayHtml}</div>`;
+            ? `<div class="card-horizontal-img" style="position:relative; overflow:hidden; background: #000;"><video src="${bgImage}" controls preload="metadata" style="position:absolute; width:100%; height:100%; object-fit:contain;"></video></div>`
+            : `<div class="card-horizontal-img" style="background-image: url('${bgImage}');"></div>`;
 
         let pdfBadge = '';
         let cardAction = '';
