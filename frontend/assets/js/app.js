@@ -1089,6 +1089,25 @@ async function renderInsightsPage(categoryFilter = null) {
         posts = posts.filter(p => normalizeCat(p.category) === targetCat);
     }
 
+    renderInsightsCards(posts);
+}
+
+window.switchCardImage = function(postId, url, thumbEl) {
+    const cardImg = document.getElementById(`card-main-img-${postId}`);
+    if (cardImg) {
+        cardImg.style.backgroundImage = `url('${url}')`;
+    }
+    if (thumbEl && thumbEl.parentElement) {
+        const thumbs = thumbEl.parentElement.querySelectorAll('div');
+        thumbs.forEach(t => t.style.borderColor = '#ffffff');
+        thumbEl.style.borderColor = 'var(--color-accent)';
+    }
+};
+
+function renderInsightsCards(posts) {
+    const container = document.getElementById('insights-cards-container');
+    if (!container) return;
+
     container.innerHTML = "";
 
     if (posts.length === 0) {
@@ -1107,10 +1126,33 @@ async function renderInsightsPage(categoryFilter = null) {
         const date = new Date(post.createdAt).toLocaleDateString('pt-PT', {day:'numeric', month:'long', year:'numeric'});
         const category = post.category || 'ARTIGO';
         
+        // Obter todas as fotografias/vídeos sem duplicações
+        const allMedia = [];
+        if (post.coverImage) allMedia.push(post.coverImage);
+        if (Array.isArray(post.gallery)) {
+            post.gallery.forEach(url => {
+                if (url && !allMedia.includes(url)) allMedia.push(url);
+            });
+        }
+
+        let thumbsOverlayHtml = "";
+        if (allMedia.length > 1) {
+            const thumbsSlice = allMedia.slice(0, 3);
+            const thumbsTags = thumbsSlice.map((url, i) => `
+                <div onclick="event.stopPropagation(); event.preventDefault(); window.switchCardImage('${post.id}', '${url}', this);" style="flex: 1; height: 42px; border-radius: 6px; border: 2px solid ${i === 0 ? 'var(--color-accent)' : '#ffffff'}; box-shadow: 0 2px 6px rgba(0,0,0,0.35); cursor: pointer; background-image: url('${url}'); background-size: cover; background-position: center; transition: border-color 0.2s, transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"></div>
+            `).join('');
+
+            thumbsOverlayHtml = `
+                <div style="position: absolute; bottom: 10px; left: 10px; right: 10px; display: flex; gap: 8px; z-index: 5;" onclick="event.stopPropagation();">
+                    ${thumbsTags}
+                </div>
+            `;
+        }
+
         const isVideo = bgImage.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(bgImage);
         const mediaHtml = isVideo
-            ? `<div class="card-horizontal-img" style="position:relative; overflow:hidden; background: #000;"><video src="${bgImage}" controls preload="metadata" style="position:absolute; width:100%; height:100%; object-fit:contain;"></video></div>`
-            : `<div class="card-horizontal-img" style="background-image: url('${bgImage}');"></div>`;
+            ? `<div class="card-horizontal-img" style="position:relative; overflow:hidden; background: #000;"><video src="${bgImage}" controls preload="metadata" style="position:absolute; width:100%; height:100%; object-fit:contain;"></video>${thumbsOverlayHtml}</div>`
+            : `<div class="card-horizontal-img" id="card-main-img-${post.id}" style="background-image: url('${bgImage}'); position: relative; overflow: hidden;">${thumbsOverlayHtml}</div>`;
 
         let pdfBadge = '';
         let cardAction = '';
