@@ -142,6 +142,33 @@
                             </div>
                             <button type="button" id="btn-remove-pdf" style="background: #e53e3e; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">Remover</button>
                         </div>
+
+                        <!-- Opções de Monetização e Acesso ao PDF -->
+                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #cce0f5;">
+                            <label style="font-weight: 600; color: var(--color-primary); font-size: 0.95rem; display: block; margin-bottom: 10px;">💰 Acesso e Monetização do Artigo/PDF</label>
+                            
+                            <div style="display: flex; gap: 20px; margin-bottom: 15px; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
+                                    <input type="radio" name="post-access-type" value="free" checked id="access-free">
+                                    <span>🎁 Gratuito (Registo de nome & email para download)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
+                                    <input type="radio" name="post-access-type" value="paid" id="access-paid">
+                                    <span>💵 Pago (Venda de Artigo / PDF)</span>
+                                </label>
+                            </div>
+
+                            <div id="paid-settings-container" style="display: none; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px;">
+                                <div class="form-group" style="margin-bottom: 15px;">
+                                    <label for="post-price" style="font-weight: 600; color: #333;">Preço do Artigo *</label>
+                                    <input type="text" id="post-price" class="form-control" placeholder="Ex: 5.000 Kz ou 20 USD">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="post-payment-info" style="font-weight: 600; color: #333;">Instruções de Pagamento / IBAN (Exibidas ao visitante)</label>
+                                    <textarea id="post-payment-info" class="form-control" rows="3" placeholder="Transferência Bancária / Multicaixa Express&#10;IBAN: AO06.0040.0000.1234.5678.9012.3&#10;Banco: BAI / BFA">IBAN: AO06.0040.0000.1234.5678.9012.3 (Mário & Joel - Advogados)&#10;Multicaixa Express: 928 186 060</textarea>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="publish-toggle">

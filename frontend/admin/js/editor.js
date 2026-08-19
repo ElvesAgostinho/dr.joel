@@ -168,6 +168,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    // Monetização e controlo de acesso
+    const accessFreeRadio = document.getElementById('access-free');
+    const accessPaidRadio = document.getElementById('access-paid');
+    const paidSettingsContainer = document.getElementById('paid-settings-container');
+    const priceInput = document.getElementById('post-price');
+    const paymentInfoInput = document.getElementById('post-payment-info');
+
+    function toggleAccessMode() {
+        if (accessPaidRadio && accessPaidRadio.checked) {
+            paidSettingsContainer.style.display = 'block';
+        } else if (paidSettingsContainer) {
+            paidSettingsContainer.style.display = 'none';
+        }
+    }
+
+    if (accessFreeRadio && accessPaidRadio) {
+        accessFreeRadio.addEventListener('change', toggleAccessMode);
+        accessPaidRadio.addEventListener('change', toggleAccessMode);
+    }
+
     // Load existing post if ID is present
     if (postId) {
         pageTitle.textContent = "Editar Publicação";
@@ -180,6 +200,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (post.pdfUrl) {
                 updatePdfPreview(post.pdfUrl);
             }
+            if (post.isPaid) {
+                if (accessPaidRadio) accessPaidRadio.checked = true;
+                if (priceInput) priceInput.value = post.price || '';
+                if (paymentInfoInput && post.paymentInfo) paymentInfoInput.value = post.paymentInfo;
+                toggleAccessMode();
+            } else {
+                if (accessFreeRadio) accessFreeRadio.checked = true;
+                toggleAccessMode();
+            }
+
             if (post.category) {
                 const cat = post.category.toUpperCase().trim();
                 let optionExists = false;
@@ -214,6 +244,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
+        const isPaid = accessPaidRadio ? accessPaidRadio.checked : false;
+        const price = priceInput ? priceInput.value.trim() : '';
+        const paymentInfo = paymentInfoInput ? paymentInfoInput.value.trim() : '';
+
+        if (isPaid && !price) {
+            alert("Por favor, introduza o preço do artigo pago.");
+            return;
+        }
+
         const originalText = saveBtn.textContent;
         saveBtn.textContent = 'A guardar...';
         saveBtn.disabled = true;
@@ -227,6 +266,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             coverImage: coverInput.value.trim(),
             gallery: currentGallery,
             pdfUrl: pdfUrlHidden ? pdfUrlHidden.value.trim() : '',
+            isPaid: isPaid,
+            price: price,
+            paymentInfo: paymentInfo,
             content: content,
             published: publishedCheckbox.checked
         };

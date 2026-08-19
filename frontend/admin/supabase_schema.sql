@@ -13,12 +13,18 @@ CREATE TABLE IF NOT EXISTS public.posts (
     published BOOLEAN DEFAULT false,
     category TEXT DEFAULT 'ARTIGO',  -- FIX: coluna em falta
     pdf_url TEXT,
+    is_paid BOOLEAN DEFAULT false,
+    price TEXT,
+    payment_info TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Adicionar coluna category e pdf_url se a tabela já existia sem elas
+-- Adicionar colunas se a tabela já existia sem elas
 ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'ARTIGO';
 ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS pdf_url TEXT;
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT false;
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS price TEXT;
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS payment_info TEXT;
 
 -- ============================================================
 -- TABLE: public.team

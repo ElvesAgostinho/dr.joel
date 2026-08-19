@@ -615,28 +615,47 @@ async function openPostModal(id) {
 
     let pdfHtml = "";
     if (post.pdfUrl) {
-        pdfHtml = `
-            <div style="margin-top: 30px; padding: 20px 24px; background: #f8f9fa; border-left: 4px solid var(--color-accent); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 14px;">
-                    <div style="width: 44px; height: 44px; background: rgba(197, 168, 128, 0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--color-accent)" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                        </svg>
+        if (post.isPaid) {
+            pdfHtml = `
+                <div style="margin-top: 30px; padding: 20px 24px; background: #fff8f6; border-left: 4px solid #e53e3e; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 44px; height: 44px; background: rgba(229, 62, 62, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.2rem;">
+                            💵
+                        </div>
+                        <div>
+                            <strong style="display: block; font-size: 1.05rem; color: var(--color-primary); margin-bottom: 2px;">Artigo Premium (${post.price || 'Pago'})</strong>
+                            <span style="font-size: 0.85rem; color: #666;">Adquira este artigo completo em documento PDF</span>
+                        </div>
                     </div>
-                    <div>
-                        <strong style="display: block; font-size: 1.05rem; color: var(--color-primary); margin-bottom: 2px;">Documento Anexo (PDF)</strong>
-                        <span style="font-size: 0.85rem; color: #666;">Descarregue a versão integral deste documento em PDF</span>
-                    </div>
+                    <button onclick="window.triggerArticlePdf('${post.id}')" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: #e53e3e; color: #fff; border: none; padding: 12px 22px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='#c53030'" onmouseout="this.style.background='#e53e3e'">
+                        🛒 Adquirir Artigo (${post.price || 'Pago'})
+                    </button>
                 </div>
-                <a href="${post.pdfUrl}" target="_blank" download class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: var(--color-primary); color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; transition: background 0.3s;" onmouseover="this.style.background='var(--color-accent)'" onmouseout="this.style.background='var(--color-primary)'">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    Baixar PDF
-                </a>
-            </div>
-        `;
+            `;
+        } else {
+            pdfHtml = `
+                <div style="margin-top: 30px; padding: 20px 24px; background: #f8f9fa; border-left: 4px solid var(--color-accent); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 44px; height: 44px; background: rgba(197, 168, 128, 0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--color-accent)" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                        </div>
+                        <div>
+                            <strong style="display: block; font-size: 1.05rem; color: var(--color-primary); margin-bottom: 2px;">Documento Anexo (PDF Grátis)</strong>
+                            <span style="font-size: 0.85rem; color: #666;">Descarregue a versão integral deste documento em PDF</span>
+                        </div>
+                    </div>
+                    <button onclick="window.triggerArticlePdf('${post.id}')" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: var(--color-primary); color: #fff; border: none; padding: 12px 22px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='var(--color-accent)'" onmouseout="this.style.background='var(--color-primary)'">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Baixar PDF Grátis
+                    </button>
+                </div>
+            `;
+        }
     }
 
     body.innerHTML = `
@@ -649,6 +668,231 @@ async function openPostModal(id) {
     
     modal.classList.add('active');
 }
+
+window.triggerArticlePdf = async function(postId) {
+    const post = await API.getPost(postId);
+    if (!post) return;
+    if (post.isPaid) {
+        openPurchaseModal(post);
+    } else {
+        openLeadModal(post);
+    }
+};
+
+function openLeadModal(post) {
+    let modal = document.getElementById('article-lead-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'article-lead-modal';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+    }
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 520px; width: 90%; text-align: left; padding: 35px; border-radius: 12px; background: #fff; position: relative;">
+            <button class="close-modal" onclick="document.getElementById('article-lead-modal').classList.remove('active')" style="position: absolute; right: 20px; top: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            
+            <div style="margin-bottom: 20px;">
+                <span style="background: rgba(197, 168, 128, 0.15); color: var(--color-accent); font-weight: 600; font-size: 0.8rem; padding: 3px 8px; border-radius: 4px;">PDF GRATUITO</span>
+                <h3 style="font-family: var(--font-heading); font-size: 1.4rem; margin: 10px 0 5px; color: var(--color-primary);">${post.title}</h3>
+                <p style="font-size: 0.9rem; color: #666;">Preencha os seus dados para descarregar o documento integral em PDF.</p>
+            </div>
+
+            <form id="lead-download-form" onsubmit="window.handleLeadDownload(event, '${post.id}', '${encodeURIComponent(post.pdfUrl)}')">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 5px; color: #333;">Nome Completo *</label>
+                    <input type="text" id="lead-name" required placeholder="O seu nome completo" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 5px; color: #333;">E-mail *</label>
+                    <input type="email" id="lead-email" required placeholder="seu.email@exemplo.com" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 5px; color: #333;">Telefone / WhatsApp (Opcional)</label>
+                    <input type="tel" id="lead-phone" placeholder="(+244) 9XX XXX XXX" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem;">
+                </div>
+                <div id="lead-feedback" style="display:none; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9rem;"></div>
+                <button type="submit" id="btn-lead-submit" style="width: 100%; padding: 14px; background: var(--color-primary); color: #fff; border: none; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer;">
+                    🚀 Descarregar PDF Agora
+                </button>
+            </form>
+        </div>
+    `;
+    modal.classList.add('active');
+}
+
+window.handleLeadDownload = async function(e, postId, encodedPdfUrl) {
+    e.preventDefault();
+    const pdfUrl = decodeURIComponent(encodedPdfUrl);
+    const name = document.getElementById('lead-name').value.trim();
+    const email = document.getElementById('lead-email').value.trim();
+    const phone = document.getElementById('lead-phone').value.trim();
+    const feedback = document.getElementById('lead-feedback');
+    const btn = document.getElementById('btn-lead-submit');
+
+    if (!name || !email) return;
+
+    btn.disabled = true;
+    btn.textContent = 'A processar...';
+
+    const post = await API.getPost(postId);
+    const postTitle = post ? post.title : 'Artigo';
+
+    // 1. Guardar lead no Supabase
+    try {
+        if (typeof API !== 'undefined' && API.sendContact) {
+            await API.sendContact({
+                nome: name,
+                email: email,
+                telefone: phone,
+                empresa: 'Download PDF Grátis',
+                assunto: '[Download PDF Grátis] ' + postTitle,
+                mensagem: 'Visitante efetuou download do PDF gratuito do artigo: ' + postTitle
+            });
+        }
+    } catch(err) {}
+
+    // 2. Enviar notificação de e-mail por FormSubmit
+    try {
+        await fetch('https://formsubmit.co/ajax/geral@marioejoeladv.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                _subject: 'Novo Download de PDF Grátis: ' + postTitle,
+                Nome: name,
+                Email: email,
+                Telefone: phone || 'N/A',
+                Artigo: postTitle
+            })
+        });
+    } catch(err) {}
+
+    // 3. Iniciar download do PDF
+    window.open(pdfUrl, '_blank');
+
+    feedback.style.display = 'block';
+    feedback.style.background = '#e6fffa';
+    feedback.style.color = '#234e52';
+    feedback.innerHTML = '✅ O seu download iniciou-se! Obrigado pelo seu interesse.';
+    btn.disabled = false;
+    btn.textContent = '🚀 Descarregar Novamente';
+};
+
+function openPurchaseModal(post) {
+    let modal = document.getElementById('article-purchase-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'article-purchase-modal';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+    }
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 580px; width: 90%; text-align: left; padding: 35px; border-radius: 12px; background: #fff; position: relative;">
+            <button class="close-modal" onclick="document.getElementById('article-purchase-modal').classList.remove('active')" style="position: absolute; right: 20px; top: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            
+            <div style="margin-bottom: 20px;">
+                <span style="background: #e53e3e; color: #fff; font-weight: 700; font-size: 0.8rem; padding: 3px 8px; border-radius: 4px;">ARTIGO PREMIUM — ${post.price || 'PAGO'}</span>
+                <h3 style="font-family: var(--font-heading); font-size: 1.4rem; margin: 10px 0 5px; color: var(--color-primary);">${post.title}</h3>
+                <p style="font-size: 0.9rem; color: #666;">Efetue o pagamento e envie o seu pedido para receber o artigo completo em PDF.</p>
+            </div>
+
+            <div style="background: #fff8f6; padding: 16px 20px; border-left: 4px solid #e53e3e; border-radius: 6px; margin-bottom: 20px;">
+                <strong style="display: block; color: #c53030; font-size: 0.95rem; margin-bottom: 6px;">💳 Dados para Pagamento / IBAN:</strong>
+                <div style="white-space: pre-wrap; font-size: 0.9rem; color: #2d3748; line-height: 1.5; font-family: monospace;">${post.paymentInfo || 'IBAN: AO06.0040.0000.1234.5678.9012.3 (Mário & Joel - Advogados)\nMulticaixa Express: 928 186 060'}</div>
+            </div>
+
+            <form id="purchase-form" onsubmit="window.handlePurchaseOrder(event, '${post.id}', '${post.price || ''}')">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 5px; color: #333;">Nome Completo *</label>
+                        <input type="text" id="purchase-name" required placeholder="O seu nome" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 5px; color: #333;">E-mail *</label>
+                        <input type="email" id="purchase-email" required placeholder="seu.email@exemplo.com" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem;">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 5px; color: #333;">Telefone / WhatsApp *</label>
+                        <input type="tel" id="purchase-phone" required placeholder="(+244) 9XX XXX XXX" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 5px; color: #333;">Comprovativo / N.º Ref (Opcional)</label>
+                        <input type="text" id="purchase-ref" placeholder="N.º da transferência / Ref" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem;">
+                    </div>
+                </div>
+
+                <div id="purchase-feedback" style="display:none; padding:12px; border-radius:6px; margin-bottom:15px; font-size:0.9rem;"></div>
+                <button type="submit" id="btn-purchase-submit" style="width: 100%; padding: 14px; background: #e53e3e; color: #fff; border: none; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer;">
+                    🛒 Confirmar Pedido de Compra
+                </button>
+            </form>
+        </div>
+    `;
+    modal.classList.add('active');
+}
+
+window.handlePurchaseOrder = async function(e, postId, price) {
+    e.preventDefault();
+    const name = document.getElementById('purchase-name').value.trim();
+    const email = document.getElementById('purchase-email').value.trim();
+    const phone = document.getElementById('purchase-phone').value.trim();
+    const ref = document.getElementById('purchase-ref').value.trim();
+    const feedback = document.getElementById('purchase-feedback');
+    const btn = document.getElementById('btn-purchase-submit');
+
+    if (!name || !email || !phone) return;
+
+    btn.disabled = true;
+    btn.textContent = 'A submeter pedido...';
+
+    const post = await API.getPost(postId);
+    const postTitle = post ? post.title : 'Artigo Pago';
+
+    const fullSubject = '[Pedido de Compra de Artigo] ' + postTitle + (price ? ' [Valor: ' + price + ']' : '');
+    const messageDetails = 'Solicitação de compra do artigo pago em PDF.\nArtigo: ' + postTitle + '\nPreço: ' + (price || 'N/A') + '\nComprovativo/Ref: ' + (ref || 'Pendente');
+
+    // 1. Guardar no Supabase
+    try {
+        if (typeof API !== 'undefined' && API.sendContact) {
+            await API.sendContact({
+                nome: name,
+                email: email,
+                telefone: phone,
+                empresa: ref ? 'Ref: ' + ref : 'Pedido de Compra',
+                assunto: fullSubject,
+                mensagem: messageDetails
+            });
+        }
+    } catch(err) {}
+
+    // 2. Enviar e-mail via FormSubmit
+    try {
+        await fetch('https://formsubmit.co/ajax/geral@marioejoeladv.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                _subject: fullSubject,
+                Nome: name,
+                Email: email,
+                Telefone: phone,
+                Comprovativo_Ref: ref || 'Pendente',
+                Artigo: postTitle,
+                Valor: price || 'N/A'
+            })
+        });
+    } catch(err) {}
+
+    feedback.style.display = 'block';
+    feedback.style.background = '#e6fffa';
+    feedback.style.color = '#234e52';
+    feedback.innerHTML = '<strong>✅ O seu pedido de compra foi submetido com sucesso!</strong><br>A nossa equipa irá validar o pagamento e enviar o ficheiro PDF para <u>' + email + '</u>.';
+    btn.disabled = false;
+    btn.textContent = 'Pedido Registado';
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     Promise.all([
@@ -855,7 +1099,12 @@ async function renderInsightsPage(categoryFilter = null) {
             ? `<div class="card-horizontal-img" style="position:relative; overflow:hidden; background: #000;"><video src="${bgImage}" controls preload="metadata" style="position:absolute; width:100%; height:100%; object-fit:contain;"></video></div>`
             : `<div class="card-horizontal-img" style="background-image: url('${bgImage}');"></div>`;
 
-        const pdfBadge = post.pdfUrl ? `<span style="display:inline-flex; align-items:center; gap:4px; background:rgba(197, 168, 128, 0.15); color:var(--color-accent); font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; margin-left:8px;">📄 PDF</span>` : '';
+        let pdfBadge = '';
+        if (post.isPaid) {
+            pdfBadge = `<span style="display:inline-flex; align-items:center; gap:4px; background:#e53e3e; color:#fff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:8px;">💵 ${post.price || 'PAGO'}</span>`;
+        } else if (post.pdfUrl) {
+            pdfBadge = `<span style="display:inline-flex; align-items:center; gap:4px; background:rgba(197, 168, 128, 0.15); color:var(--color-accent); font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; margin-left:8px;">📄 PDF GRÁTIS</span>`;
+        }
 
         card.innerHTML = `
             ${mediaHtml}

@@ -158,6 +158,9 @@ const API = {
             coverImage: p.cover_image,
             gallery: p.gallery || [],
             pdfUrl: p.pdf_url || '',
+            isPaid: p.is_paid === true,
+            price: p.price || '',
+            paymentInfo: p.payment_info || '',
             published: p.published,
             category: p.category || 'ARTIGO',
             createdAt: new Date(p.created_at).getTime()
@@ -175,6 +178,9 @@ const API = {
             coverImage: p.cover_image,
             gallery: p.gallery || [],
             pdfUrl: p.pdf_url || '',
+            isPaid: p.is_paid === true,
+            price: p.price || '',
+            paymentInfo: p.payment_info || '',
             published: p.published,
             category: p.category || 'ARTIGO',
             createdAt: new Date(p.created_at).getTime()
@@ -189,6 +195,9 @@ const API = {
             cover_image: post.coverImage,
             gallery: post.gallery || [],
             pdf_url: post.pdfUrl || '',
+            is_paid: post.isPaid === true || post.isPaid === 'true',
+            price: post.price || '',
+            payment_info: post.paymentInfo || '',
             published: post.published === true || post.published === 'true',
             category: post.category || 'ARTIGO'
         };
