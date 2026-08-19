@@ -1034,6 +1034,13 @@ async function renderInsightsPage(categoryFilter = null) {
         categoryFilter = urlParams.get('category') || 'TODOS';
     }
 
+    function normalizeCat(cat) {
+        if (!cat) return 'ARTIGOS';
+        let c = cat.toUpperCase().trim();
+        if (c === 'ARTIGO') return 'ARTIGOS';
+        return c;
+    }
+
     // Gerar dinamicamente as categorias na sub-navegação caso o container exista
     const subnavContainer = document.querySelector('.insights-subnav');
     if (subnavContainer) {
@@ -1048,19 +1055,18 @@ async function renderInsightsPage(categoryFilter = null) {
         
         allPosts.forEach(p => {
             if (p.category) {
-                categoriesSet.add(p.category.toUpperCase().trim());
+                categoriesSet.add(normalizeCat(p.category));
             }
         });
         
         const uniqueCategories = Array.from(categoriesSet);
         subnavContainer.innerHTML = '';
         uniqueCategories.forEach(cat => {
-            const label = cat === 'TODOS' ? 'TODOS' : (cat === 'ARTIGO' ? 'ARTIGOS' : cat);
             const a = document.createElement('a');
             a.href = '#';
             a.setAttribute('data-filter', cat);
-            a.textContent = label;
-            if (categoryFilter.toUpperCase() === cat) {
+            a.textContent = cat;
+            if (normalizeCat(categoryFilter) === cat) {
                 a.className = 'active';
             }
             a.onclick = (e) => {
@@ -1073,7 +1079,8 @@ async function renderInsightsPage(categoryFilter = null) {
 
     let posts = (await API.getPosts()).filter(p => p.published);
     if (categoryFilter !== 'TODOS') {
-        posts = posts.filter(p => (p.category || 'ARTIGO').toUpperCase() === categoryFilter.toUpperCase());
+        const targetCat = normalizeCat(categoryFilter);
+        posts = posts.filter(p => normalizeCat(p.category) === targetCat);
     }
 
     container.innerHTML = "";
