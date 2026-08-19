@@ -533,6 +533,97 @@ async function renderBlogPosts() {
     });
 }
 
+window.lightboxZoom = 1.0;
+
+window.openFullscreenImage = function(url) {
+    if (!url || url.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(url)) return;
+
+    window.lightboxZoom = 1.0;
+    let lb = document.getElementById('image-lightbox');
+    if (!lb) {
+        lb = document.createElement('div');
+        lb.id = 'image-lightbox';
+        lb.style.cssText = 'position: fixed; inset: 0; background: rgba(0, 0, 0, 0.94); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.3s ease;';
+        lb.innerHTML = `
+            <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 100000; flex-wrap: wrap;">
+                <button onclick="window.zoomLightbox(0.25)" title="Zoom +" style="background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem;">🔍 +</button>
+                <button onclick="window.zoomLightbox(-0.25)" title="Zoom -" style="background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem;">🔍 -</button>
+                <button onclick="window.resetLightboxZoom()" title="Restaurar Tamanho" style="background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">⛶ 1:1</button>
+                <button onclick="window.toggleLightboxFullscreen()" title="Maximizar / Ecrã Inteiro" style="background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">⛶ Maximizar</button>
+                <button onclick="window.closeLightbox()" title="Fechar" style="background: #e53e3e; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem;">✕ Fechar</button>
+            </div>
+            <div id="lightbox-img-container" style="width: 90vw; height: 85vh; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: grab;">
+                <img id="lightbox-img" src="" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; transition: transform 0.2s ease-out; transform: scale(1.0); user-select: none;">
+            </div>
+        `;
+        document.body.appendChild(lb);
+
+        const container = document.getElementById('lightbox-img-container');
+        if (container) {
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY < 0 ? 0.25 : -0.25;
+                window.zoomLightbox(delta);
+            }, { passive: false });
+        }
+    }
+
+    const img = document.getElementById('lightbox-img');
+    if (img) {
+        img.src = url;
+        img.style.transform = 'scale(1.0)';
+    }
+
+    lb.style.display = 'flex';
+    requestAnimationFrame(() => {
+        lb.style.opacity = '1';
+    });
+};
+
+window.zoomLightbox = function(delta) {
+    window.lightboxZoom = Math.min(Math.max(0.5, window.lightboxZoom + delta), 4.0);
+    const img = document.getElementById('lightbox-img');
+    if (img) {
+        img.style.transform = `scale(${window.lightboxZoom})`;
+    }
+};
+
+window.resetLightboxZoom = function() {
+    window.lightboxZoom = 1.0;
+    const img = document.getElementById('lightbox-img');
+    if (img) {
+        img.style.transform = 'scale(1.0)';
+    }
+};
+
+window.toggleLightboxFullscreen = function() {
+    const lb = document.getElementById('image-lightbox');
+    if (!document.fullscreenElement) {
+        if (lb && lb.requestFullscreen) {
+            lb.requestFullscreen().catch(() => {});
+        } else if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+        }
+    }
+};
+
+window.closeLightbox = function() {
+    const lb = document.getElementById('image-lightbox');
+    if (lb) {
+        lb.style.opacity = '0';
+        setTimeout(() => {
+            lb.style.display = 'none';
+        }, 300);
+    }
+    if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+    }
+};
+
 window.switchModalMedia = function(thumbEl, url) {
     const isVideo = url.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(url);
     const mainMedia = document.getElementById('modal-main-media');
@@ -541,7 +632,7 @@ window.switchModalMedia = function(thumbEl, url) {
     if (isVideo) {
         mainMedia.outerHTML = `<video id="modal-main-media" src="${url}" controls autoplay preload="metadata" style="width: 100%; height: 380px; object-fit: contain; background: #000; border-radius: 10px; display: block;"></video>`;
     } else {
-        mainMedia.outerHTML = `<img id="modal-main-media" src="${url}" style="width: 100%; height: 380px; object-fit: cover; border-radius: 10px; display: block;">`;
+        mainMedia.outerHTML = `<img id="modal-main-media" src="${url}" onclick="window.openFullscreenImage(this.src)" title="Clique para Ampliar, Maximizar e Zoom" style="width: 100%; height: 380px; object-fit: cover; border-radius: 10px; display: block; cursor: zoom-in;">`;
     }
 
     const thumbs = document.querySelectorAll('#modal-thumbs-bar > div');
@@ -1105,7 +1196,7 @@ window.switchCardImage = function(postId, url, thumbEl) {
 };
 
 function renderInsightsCards(posts) {
-    const container = document.getElementById('insights-cards-container');
+    const container = document.getElementById('insights-cards-container') || document.getElementById('insights-page-container');
     if (!container) return;
 
     container.innerHTML = "";
