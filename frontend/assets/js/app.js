@@ -614,7 +614,7 @@ async function openPostModal(id) {
     }
 
     let pdfHtml = "";
-    if (post.pdfUrl) {
+    if (post.pdfUrl || post.isPaid) {
         if (post.isPaid) {
             pdfHtml = `
                 <div style="margin-top: 30px; padding: 20px 24px; background: #fff8f6; border-left: 4px solid #e53e3e; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">

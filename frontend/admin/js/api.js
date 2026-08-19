@@ -37,7 +37,7 @@ function getHeaders(isUpload = false, isPublic = false) {
     return headers;
 }
 
-const CACHE_KEY_PREFIX = 'mj_cache_v1_';
+const CACHE_KEY_PREFIX = 'mj_cache_v2_';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutos de cache entre navegação de páginas
 
 function getFromCache(path) {
