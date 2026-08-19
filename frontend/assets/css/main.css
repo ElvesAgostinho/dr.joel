@@ -3356,7 +3356,11 @@ body {
 
     overflow: hidden;
 
-    height: 250px;
+    min-height: 250px;
+
+    height: auto;
+
+    align-items: stretch;
 
     box-shadow: 0 4px 15px rgba(0,0,0,0.03);
 
@@ -3398,13 +3402,13 @@ body {
 
     flex: 1;
 
-    padding: 30px 40px;
+    padding: 24px 28px;
 
     display: flex;
 
     flex-direction: column;
 
-    justify-content: center;
+    justify-content: space-between;
 
 }
 
