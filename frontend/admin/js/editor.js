@@ -124,6 +124,50 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    // Handlers do Ficheiro PDF Anexo
+    const pdfFileInput = document.getElementById('post-pdf-file');
+    const pdfUrlHidden = document.getElementById('post-pdf-url');
+    const pdfPreviewContainer = document.getElementById('pdf-preview-container');
+    const pdfFileNameSpan = document.getElementById('pdf-file-name');
+    const btnRemovePdf = document.getElementById('btn-remove-pdf');
+
+    function updatePdfPreview(url) {
+        if (!pdfPreviewContainer || !pdfFileNameSpan || !pdfUrlHidden) return;
+        if (url) {
+            pdfUrlHidden.value = url;
+            const parts = url.split('/');
+            const rawName = parts[parts.length - 1] || 'documento.pdf';
+            const cleanName = rawName.includes('_') ? rawName.split('_').slice(2).join('_') || rawName : rawName;
+            pdfFileNameSpan.textContent = decodeURIComponent(cleanName);
+            pdfPreviewContainer.style.display = 'flex';
+        } else {
+            pdfUrlHidden.value = '';
+            if (pdfFileInput) pdfFileInput.value = '';
+            pdfPreviewContainer.style.display = 'none';
+        }
+    }
+
+    if (pdfFileInput) {
+        pdfFileInput.addEventListener('change', async function() {
+            const file = this.files[0];
+            if (!file) return;
+            try {
+                const url = await API.uploadMedia(file);
+                if (url) {
+                    updatePdfPreview(url);
+                }
+            } catch(err) {
+                alert("Erro no upload do ficheiro PDF: " + err.message);
+            }
+        });
+    }
+
+    if (btnRemovePdf) {
+        btnRemovePdf.addEventListener('click', function() {
+            updatePdfPreview('');
+        });
+    }
+
     // Load existing post if ID is present
     if (postId) {
         pageTitle.textContent = "Editar Publicação";
@@ -133,6 +177,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             coverInput.value = post.coverImage || '';
             currentGallery = Array.isArray(post.gallery) ? post.gallery : [];
             renderGalleryGrid();
+            if (post.pdfUrl) {
+                updatePdfPreview(post.pdfUrl);
+            }
             if (post.category) {
                 const cat = post.category.toUpperCase().trim();
                 let optionExists = false;
@@ -179,6 +226,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             category: categoryInput.value,
             coverImage: coverInput.value.trim(),
             gallery: currentGallery,
+            pdfUrl: pdfUrlHidden ? pdfUrlHidden.value.trim() : '',
             content: content,
             published: publishedCheckbox.checked
         };

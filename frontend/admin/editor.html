@@ -131,6 +131,19 @@
                         <div id="gallery-preview-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin-top: 15px;"></div>
                     </div>
 
+                    <div class="form-group" style="margin-top: 25px; background: #eef4fb; padding: 20px; border-radius: 8px; border: 1px solid #cce0f5;">
+                        <label for="post-pdf-file" style="font-weight: 600; color: var(--color-primary); font-size: 1rem; display: block; margin-bottom: 5px;">📄 Documento PDF Anexo (Opcional)</label>
+                        <p style="font-size: 0.85rem; color: #555; margin-bottom: 15px;">Anexe um documento PDF para os visitantes descarregarem na leitura deste artigo.</p>
+                        <input type="file" id="post-pdf-file" class="form-control" accept="application/pdf,.pdf">
+                        <input type="hidden" id="post-pdf-url">
+                        <div id="pdf-preview-container" style="margin-top: 12px; display: none; background: #fff; padding: 12px 18px; border-radius: 6px; border: 1px solid #bce0fd; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 10px; font-weight: 500; color: #1a4d7c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                <span>📄</span> <span id="pdf-file-name">documento.pdf</span>
+                            </div>
+                            <button type="button" id="btn-remove-pdf" style="background: #e53e3e; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">Remover</button>
+                        </div>
+                    </div>
+
                     <div class="publish-toggle">
                         <label class="switch">
                             <input type="checkbox" id="post-published">

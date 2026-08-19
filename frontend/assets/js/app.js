@@ -613,11 +613,38 @@ async function openPostModal(id) {
         `;
     }
 
+    let pdfHtml = "";
+    if (post.pdfUrl) {
+        pdfHtml = `
+            <div style="margin-top: 30px; padding: 20px 24px; background: #f8f9fa; border-left: 4px solid var(--color-accent); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; background: rgba(197, 168, 128, 0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--color-accent)" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <strong style="display: block; font-size: 1.05rem; color: var(--color-primary); margin-bottom: 2px;">Documento Anexo (PDF)</strong>
+                        <span style="font-size: 0.85rem; color: #666;">Descarregue a versão integral deste documento em PDF</span>
+                    </div>
+                </div>
+                <a href="${post.pdfUrl}" target="_blank" download class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: var(--color-primary); color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; transition: background 0.3s;" onmouseover="this.style.background='var(--color-accent)'" onmouseout="this.style.background='var(--color-primary)'">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Baixar PDF
+                </a>
+            </div>
+        `;
+    }
+
     body.innerHTML = `
         ${mediaHtml}
         <small style="color: var(--color-accent); font-weight: 600;">${date}</small>
         <h2 style="font-family: var(--font-heading); font-size: 2.5rem; margin: 15px 0 30px;">${post.title}</h2>
-        <div style="line-height: 1.8; font-size: 1.1rem;" class="post-content-html">${post.content}</div>
+        ${pdfHtml}
+        <div style="line-height: 1.8; font-size: 1.1rem; margin-top: 25px;" class="post-content-html">${post.content}</div>
     `;
     
     modal.classList.add('active');
@@ -828,10 +855,15 @@ async function renderInsightsPage(categoryFilter = null) {
             ? `<div class="card-horizontal-img" style="position:relative; overflow:hidden; background: #000;"><video src="${bgImage}" controls preload="metadata" style="position:absolute; width:100%; height:100%; object-fit:contain;"></video></div>`
             : `<div class="card-horizontal-img" style="background-image: url('${bgImage}');"></div>`;
 
+        const pdfBadge = post.pdfUrl ? `<span style="display:inline-flex; align-items:center; gap:4px; background:rgba(197, 168, 128, 0.15); color:var(--color-accent); font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; margin-left:8px;">📄 PDF</span>` : '';
+
         card.innerHTML = `
             ${mediaHtml}
             <div class="card-horizontal-content">
-                <div class="category" style="color:var(--color-accent);">${category}</div>
+                <div class="category" style="color:var(--color-accent); font-weight:600; display:flex; align-items:center; justify-content:space-between;">
+                    <span>${category}</span>
+                    ${pdfBadge}
+                </div>
                 <h3>${post.title}</h3>
                 <div class="date">${date}</div>
             </div>

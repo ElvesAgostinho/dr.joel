@@ -12,11 +12,13 @@ CREATE TABLE IF NOT EXISTS public.posts (
     cover_image TEXT,
     published BOOLEAN DEFAULT false,
     category TEXT DEFAULT 'ARTIGO',  -- FIX: coluna em falta
+    pdf_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Adicionar coluna category se a tabela já existia sem ela
+-- Adicionar coluna category e pdf_url se a tabela já existia sem elas
 ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'ARTIGO';
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS pdf_url TEXT;
 
 -- ============================================================
 -- TABLE: public.team

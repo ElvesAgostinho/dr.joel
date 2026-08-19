@@ -610,6 +610,7 @@
 
                     var fullSubject = type + (date ? ' [Data: ' + date + ']' : '');
                     
+                    // 1. Guardar no Supabase silenciosamente
                     try {
                         if (typeof API !== 'undefined' && API.sendContact) {
                             await API.sendContact({
@@ -621,22 +622,57 @@
                                 mensagem: message
                             });
                         }
-                        
-                        feedback.style.display = 'block';
-                        feedback.style.background = '#e6fffa';
-                        feedback.style.color = '#234e52';
-                        feedback.textContent = 'O seu pedido foi enviado com sucesso! A nossa equipa entrará em contacto em breve.';
-                        
-                        form.reset();
-                    } catch (err) {
-                        feedback.style.display = 'block';
-                        feedback.style.background = '#fde8e8';
-                        feedback.style.color = '#e53e3e';
-                        feedback.textContent = 'Erro ao enviar pedido: ' + (err.message || 'Tente novamente mais tarde.');
-                    } finally {
-                        btn.disabled = false;
-                        btn.textContent = 'Enviar Pedido';
+                    } catch (dbErr) {
+                        console.warn('DB Log notice:', dbErr);
                     }
+
+                    // 2. Enviar por E-mail via FormSubmit (para geral@marioejoeladv.com)
+                    var emailBody = "Novo Pedido recebido do site Mário & Joel:\n\n" +
+                        "Nome: " + name + "\n" +
+                        "E-mail: " + email + "\n" +
+                        "Telefone / WhatsApp: " + phone + "\n" +
+                        "Empresa: " + (company || 'N/A') + "\n" +
+                        "Tipo de Solicitação: " + type + "\n" +
+                        "Data Pretendida: " + (date || 'N/A') + "\n\n" +
+                        "Mensagem:\n" + message;
+
+                    try {
+                        await fetch('https://formsubmit.co/ajax/geral@marioejoeladv.com', {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                _subject: 'Novo Contacto do Site: ' + fullSubject,
+                                _template: 'table',
+                                Nome: name,
+                                Email: email,
+                                Telefone: phone,
+                                Empresa: company || 'N/A',
+                                Tipo_de_Solicitacao: type,
+                                Data_Pretendida: date || 'N/A',
+                                Mensagem: message
+                            })
+                        });
+                    } catch (emailErr) {
+                        console.warn('Email dispatch notice:', emailErr);
+                    }
+
+                    var mailtoUrl = "mailto:geral@marioejoeladv.com?cc=joeldacosta.adv2@gmail.com&subject=" + encodeURIComponent("Contacto do Site: " + fullSubject) + "&body=" + encodeURIComponent(emailBody);
+
+                    feedback.style.display = 'block';
+                    feedback.style.background = '#e6fffa';
+                    feedback.style.color = '#234e52';
+                    feedback.innerHTML = '<strong>✅ O seu pedido foi registado e enviado com sucesso!</strong><br>' +
+                        'A nossa equipa entrará em contacto para <u>' + email + '</u> em breve.<br>' +
+                        '<a href="' + mailtoUrl + '" style="display:inline-block; margin-top:10px; color:var(--color-primary); font-weight:600; text-decoration:underline;">' +
+                        '✉️ Enviar cópia direta pelo seu aplicativo de e-mail' +
+                        '</a>';
+
+                    form.reset();
+                    btn.disabled = false;
+                    btn.textContent = 'Enviar Pedido';
                 });
             }
         });
