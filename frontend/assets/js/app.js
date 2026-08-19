@@ -599,55 +599,38 @@ async function openPostModal(id) {
     const body = document.getElementById('post-modal-body');
     const date = new Date(post.createdAt).toLocaleDateString('pt-PT');
     
-    // Obter todos os media (capa + galeria de fotos/vídeos)
-    const allMedia = [];
-    if (post.coverImage) allMedia.push(post.coverImage);
-    if (Array.isArray(post.gallery)) {
-        post.gallery.forEach(url => {
-            if (url && !allMedia.includes(url)) allMedia.push(url);
-        });
+    // Imagem/Vídeo de Capa Principal no topo
+    let mediaHtml = "";
+    if (post.coverImage) {
+        const isVideo = post.coverImage.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(post.coverImage);
+        mediaHtml = isVideo
+            ? `<video src="${post.coverImage}" controls preload="metadata" style="width: 100%; height: 400px; object-fit: contain; background: #000; border-radius: 12px; margin-bottom: 25px;"></video>`
+            : `<img src="${post.coverImage}" alt="Capa" style="width: 100%; max-height: 460px; object-fit: cover; border-radius: 12px; margin-bottom: 25px;">`;
     }
 
-    window.modalMediaList = allMedia;
-    window.modalMediaIdx = 0;
+    // Galeria de fotografias do evento (Sem duplicar a imagem de capa!)
+    let galleryGridHtml = "";
+    if (Array.isArray(post.gallery) && post.gallery.length > 0) {
+        const uniqueGallery = post.gallery.filter(url => url && url !== post.coverImage);
+        if (uniqueGallery.length > 0) {
+            const itemsHtml = uniqueGallery.map(url => {
+                const isVid = url.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(url);
+                return isVid
+                    ? `<div style="border-radius: 12px; overflow: hidden; height: 220px; background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.06);"><video src="${url}" controls style="width: 100%; height: 100%; object-fit: cover;"></video></div>`
+                    : `<div style="border-radius: 12px; overflow: hidden; height: 220px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); cursor: pointer;" onclick="window.open('${url}', '_blank')"><img src="${url}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'"></div>`;
+            }).join('');
 
-    let mediaHtml = "";
-    if (allMedia.length === 1) {
-        const isVideo = allMedia[0].startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(allMedia[0]);
-        mediaHtml = isVideo
-            ? `<video src="${allMedia[0]}" controls preload="metadata" style="width: 100%; height: 400px; object-fit: contain; background: #000; border-radius: 12px; margin-bottom: 30px;"></video>`
-            : `<img src="${allMedia[0]}" alt="Capa" style="width: 100%; max-height: 440px; object-fit: cover; border-radius: 12px; margin-bottom: 30px;">`;
-    } else if (allMedia.length > 1) {
-        const mainMedia = allMedia[0];
-        const isMainVideo = mainMedia.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(mainMedia);
-
-        const mainTag = isMainVideo
-            ? `<video id="modal-main-media" src="${mainMedia}" controls preload="metadata" style="width: 100%; height: 440px; object-fit: contain; background: #111; display: block;"></video>`
-            : `<img id="modal-main-media" src="${mainMedia}" style="width: 100%; height: 440px; object-fit: contain; background: #111; display: block;">`;
-
-        let dotsHtml = allMedia.map((_, i) => `
-            <span onclick="window.setModalMediaIndex(${i})" style="width: 10px; height: 10px; border-radius: 50%; background: ${i === 0 ? '#ffffff' : 'rgba(255,255,255,0.4)'}; cursor: pointer; transition: all 0.3s; transform: ${i === 0 ? 'scale(1.2)' : 'scale(1)'}; display: inline-block;"></span>
-        `).join('');
-
-        mediaHtml = `
-            <div style="position: relative; margin-bottom: 30px; border-radius: 12px; overflow: hidden; background: #111; box-shadow: 0 8px 30px rgba(0,0,0,0.15);">
-                <div id="modal-media-counter" style="position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.65); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; z-index: 10; backdrop-filter: blur(4px);">
-                    📷 1 / ${allMedia.length}
+            galleryGridHtml = `
+                <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #eaeaea;">
+                    <h4 style="font-family: var(--font-heading); font-size: 1.3rem; color: var(--color-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                        🖼️ Fotografias Adicionais do Evento (${uniqueGallery.length})
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                        ${itemsHtml}
+                    </div>
                 </div>
-                <button onclick="window.navigateModalMedia(-1)" aria-label="Anterior" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; background: rgba(0, 0, 0, 0.55); color: #fff; border: none; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: background 0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.85)'" onmouseout="this.style.background='rgba(0,0,0,0.55)'">
-                    ❮
-                </button>
-                <div id="modal-main-wrapper" style="width: 100%; min-height: 380px; display: flex; align-items: center; justify-content: center; background: #111;">
-                    ${mainTag}
-                </div>
-                <button onclick="window.navigateModalMedia(1)" aria-label="Seguinte" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; background: rgba(0, 0, 0, 0.55); color: #fff; border: none; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: background 0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.85)'" onmouseout="this.style.background='rgba(0,0,0,0.55)'">
-                    ❯
-                </button>
-                <div id="modal-media-dots" style="position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 15px; backdrop-filter: blur(4px);">
-                    ${dotsHtml}
-                </div>
-            </div>
-        `;
+            `;
+        }
     }
 
     let pdfHtml = "";
@@ -698,9 +681,10 @@ async function openPostModal(id) {
     body.innerHTML = `
         ${mediaHtml}
         <small style="color: var(--color-accent); font-weight: 600;">${date}</small>
-        <h2 style="font-family: var(--font-heading); font-size: 2.5rem; margin: 15px 0 30px;">${post.title}</h2>
+        <h2 style="font-family: var(--font-heading); font-size: 2.3rem; margin: 12px 0 25px;">${post.title}</h2>
         ${pdfHtml}
         <div style="line-height: 1.8; font-size: 1.1rem; margin-top: 25px;" class="post-content-html">${post.content}</div>
+        ${galleryGridHtml}
     `;
     
     modal.classList.add('active');
