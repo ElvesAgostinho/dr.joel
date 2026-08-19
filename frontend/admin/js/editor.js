@@ -109,16 +109,34 @@ document.addEventListener("DOMContentLoaded", async () => {
             const files = Array.from(this.files);
             if (files.length === 0) return;
 
+            const total = files.length;
+            let current = 0;
+
+            if (galleryGrid) {
+                const statusDiv = document.createElement('div');
+                statusDiv.id = 'gallery-upload-status';
+                statusDiv.style.cssText = 'grid-column: 1 / -1; padding: 12px; background: #e3f2fd; color: #0d47a1; border-radius: 6px; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px;';
+                statusDiv.textContent = `A carregar fotografias (0 de ${total})... Por favor, aguarde.`;
+                galleryGrid.insertBefore(statusDiv, galleryGrid.firstChild);
+            }
+
             for (const file of files) {
+                current++;
+                const statusDiv = document.getElementById('gallery-upload-status');
+                if (statusDiv) {
+                    statusDiv.textContent = `A carregar fotografias (${current} de ${total})... Por favor, aguarde.`;
+                }
+
                 try {
                     const url = await API.uploadMedia(file);
                     if (url) {
                         currentGallery.push(url);
                     }
                 } catch(err) {
-                    alert("Erro no upload de ficheiro da galeria: " + err.message);
+                    alert(`Erro no upload de "${file.name}": ` + err.message);
                 }
             }
+
             renderGalleryGrid();
             this.value = '';
         });

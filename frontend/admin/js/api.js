@@ -123,6 +123,19 @@ async function request(method, path, body, isUpload = false, isPublic = false) {
     return resultData;
 }
 
+function parseGallery(val) {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string') {
+        try {
+            const parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) return parsed;
+        } catch(e) {}
+        if (val.trim().startsWith('http')) return [val.trim()];
+    }
+    return [];
+}
+
 const API = {
     // --- STORAGE (UPLOADS DE MUNDO REAL) ---
     uploadMedia: async function(file) {
@@ -156,7 +169,7 @@ const API = {
             title: p.title,
             content: p.content,
             coverImage: p.cover_image,
-            gallery: p.gallery || [],
+            gallery: parseGallery(p.gallery),
             pdfUrl: p.pdf_url || '',
             isPaid: p.is_paid === true,
             price: p.price || '',
@@ -176,7 +189,7 @@ const API = {
             title: p.title,
             content: p.content,
             coverImage: p.cover_image,
-            gallery: p.gallery || [],
+            gallery: parseGallery(p.gallery),
             pdfUrl: p.pdf_url || '',
             isPaid: p.is_paid === true,
             price: p.price || '',
