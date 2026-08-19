@@ -4165,18 +4165,26 @@ body {
    ======================================== */
 .insights-subnav {
     display: flex !important;
-    gap: 8px !important;
-    overflow-x: auto !important;
-    white-space: nowrap !important;
-    -webkit-overflow-scrolling: touch !important;
-    padding: 8px 4px 12px 4px !important;
-    scrollbar-width: none !important;
-    justify-content: flex-start !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 12px !important;
+    flex-wrap: wrap !important;
+    margin: 20px auto 30px auto !important;
     width: 100% !important;
-    margin-bottom: 24px !important;
 }
 .insights-subnav::-webkit-scrollbar {
     display: none !important;
+}
+@media (max-width: 768px) {
+    .insights-subnav {
+        justify-content: flex-start !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        flex-wrap: nowrap !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 8px 4px 12px 4px !important;
+        scrollbar-width: none !important;
+    }
 }
 .insights-subnav a {
     display: inline-flex !important;
