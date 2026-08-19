@@ -533,49 +533,20 @@ async function renderBlogPosts() {
     });
 }
 
-window.modalMediaList = [];
-window.modalMediaIdx = 0;
-
-window.updateModalMediaDisplay = function() {
-    if (!window.modalMediaList || window.modalMediaList.length === 0) return;
-    const url = window.modalMediaList[window.modalMediaIdx];
+window.switchModalMedia = function(thumbEl, url) {
     const isVideo = url.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(url);
-    const wrapper = document.getElementById('modal-main-wrapper');
-    const counter = document.getElementById('modal-media-counter');
-    
-    if (wrapper) {
-        if (isVideo) {
-            wrapper.innerHTML = `<video id="modal-main-media" src="${url}" controls autoplay preload="metadata" style="width: 100%; height: 440px; object-fit: contain; background: #111; display: block;"></video>`;
-        } else {
-            wrapper.innerHTML = `<img id="modal-main-media" src="${url}" style="width: 100%; height: 440px; object-fit: contain; background: #111; display: block;">`;
-        }
-    }
-    
-    if (counter) {
-        counter.textContent = `📷 ${window.modalMediaIdx + 1} / ${window.modalMediaList.length}`;
+    const mainMedia = document.getElementById('modal-main-media');
+    if (!mainMedia) return;
+
+    if (isVideo) {
+        mainMedia.outerHTML = `<video id="modal-main-media" src="${url}" controls autoplay preload="metadata" style="width: 100%; height: 380px; object-fit: contain; background: #000; border-radius: 10px; display: block;"></video>`;
+    } else {
+        mainMedia.outerHTML = `<img id="modal-main-media" src="${url}" style="width: 100%; height: 380px; object-fit: cover; border-radius: 10px; display: block;">`;
     }
 
-    const dots = document.querySelectorAll('#modal-media-dots span');
-    dots.forEach((dot, idx) => {
-        if (idx === window.modalMediaIdx) {
-            dot.style.background = '#ffffff';
-            dot.style.transform = 'scale(1.2)';
-        } else {
-            dot.style.background = 'rgba(255, 255, 255, 0.4)';
-            dot.style.transform = 'scale(1)';
-        }
-    });
-};
-
-window.navigateModalMedia = function(direction) {
-    if (!window.modalMediaList || window.modalMediaList.length === 0) return;
-    window.modalMediaIdx = (window.modalMediaIdx + direction + window.modalMediaList.length) % window.modalMediaList.length;
-    window.updateModalMediaDisplay();
-};
-
-window.setModalMediaIndex = function(idx) {
-    window.modalMediaIdx = idx;
-    window.updateModalMediaDisplay();
+    const thumbs = document.querySelectorAll('#modal-thumbs-bar > div');
+    thumbs.forEach(t => t.style.borderColor = 'transparent');
+    if (thumbEl) thumbEl.style.borderColor = 'var(--color-accent)';
 };
 
 async function openPostModal(id) {
@@ -599,38 +570,53 @@ async function openPostModal(id) {
     const body = document.getElementById('post-modal-body');
     const date = new Date(post.createdAt).toLocaleDateString('pt-PT');
     
-    // Imagem/Vídeo de Capa Principal no topo
-    let mediaHtml = "";
-    if (post.coverImage) {
-        const isVideo = post.coverImage.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(post.coverImage);
-        mediaHtml = isVideo
-            ? `<video src="${post.coverImage}" controls preload="metadata" style="width: 100%; height: 400px; object-fit: contain; background: #000; border-radius: 12px; margin-bottom: 25px;"></video>`
-            : `<img src="${post.coverImage}" alt="Capa" style="width: 100%; max-height: 460px; object-fit: cover; border-radius: 12px; margin-bottom: 25px;">`;
+    // Obter todos os ficheiros de media sem duplicar a capa
+    const allMedia = [];
+    if (post.coverImage) allMedia.push(post.coverImage);
+    if (Array.isArray(post.gallery)) {
+        post.gallery.forEach(url => {
+            if (url && !allMedia.includes(url)) allMedia.push(url);
+        });
     }
 
-    // Galeria de fotografias do evento (Sem duplicar a imagem de capa!)
-    let galleryGridHtml = "";
-    if (Array.isArray(post.gallery) && post.gallery.length > 0) {
-        const uniqueGallery = post.gallery.filter(url => url && url !== post.coverImage);
-        if (uniqueGallery.length > 0) {
-            const itemsHtml = uniqueGallery.map(url => {
-                const isVid = url.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(url);
-                return isVid
-                    ? `<div style="border-radius: 12px; overflow: hidden; height: 220px; background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.06);"><video src="${url}" controls style="width: 100%; height: 100%; object-fit: cover;"></video></div>`
-                    : `<div style="border-radius: 12px; overflow: hidden; height: 220px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); cursor: pointer;" onclick="window.open('${url}', '_blank')"><img src="${url}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'"></div>`;
-            }).join('');
+    let mediaHtml = "";
+    if (allMedia.length === 1) {
+        const isVideo = allMedia[0].startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(allMedia[0]);
+        mediaHtml = isVideo
+            ? `<video src="${allMedia[0]}" controls preload="metadata" style="width: 100%; height: 380px; object-fit: contain; background: #000; border-radius: 10px; margin-bottom: 25px;"></video>`
+            : `<img src="${allMedia[0]}" alt="Capa" style="width: 100%; height: 380px; object-fit: cover; border-radius: 10px; margin-bottom: 25px;">`;
+    } else if (allMedia.length > 1) {
+        const mainMedia = allMedia[0];
+        const isMainVideo = mainMedia.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(mainMedia);
 
-            galleryGridHtml = `
-                <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #eaeaea;">
-                    <h4 style="font-family: var(--font-heading); font-size: 1.3rem; color: var(--color-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-                        🖼️ Fotografias Adicionais do Evento (${uniqueGallery.length})
-                    </h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-                        ${itemsHtml}
-                    </div>
+        const mainTag = isMainVideo
+            ? `<video id="modal-main-media" src="${mainMedia}" controls preload="metadata" style="width: 100%; height: 380px; object-fit: contain; background: #000; border-radius: 10px; display: block;"></video>`
+            : `<img id="modal-main-media" src="${mainMedia}" style="width: 100%; height: 380px; object-fit: cover; border-radius: 10px; display: block;">`;
+
+        // Limitar a exatos 3 cartões de miniaturas organizados lado a lado por baixo da foto principal
+        const thumbsSlice = allMedia.slice(0, 3);
+        const thumbsHtml = thumbsSlice.map((url, i) => {
+            const isVid = url.startsWith('data:video/') || /\.(mp4|webm|ogg)$/i.test(url);
+            const mediaItem = isVid
+                ? `<video src="${url}" style="width: 100%; height: 100%; object-fit: cover;" muted></video>`
+                : `<img src="${url}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            return `
+                <div onclick="window.switchModalMedia(this, '${url}')" style="flex: 1; height: 95px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 3px solid ${i === 0 ? 'var(--color-accent)' : 'transparent'}; box-shadow: 0 3px 10px rgba(0,0,0,0.08); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    ${mediaItem}
                 </div>
             `;
-        }
+        }).join('');
+
+        mediaHtml = `
+            <div style="margin-bottom: 25px;">
+                <div style="margin-bottom: 12px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                    ${mainTag}
+                </div>
+                <div id="modal-thumbs-bar" style="display: flex; gap: 12px; margin-top: 10px;">
+                    ${thumbsHtml}
+                </div>
+            </div>
+        `;
     }
 
     let pdfHtml = "";
@@ -684,7 +670,6 @@ async function openPostModal(id) {
         <h2 style="font-family: var(--font-heading); font-size: 2.3rem; margin: 12px 0 25px;">${post.title}</h2>
         ${pdfHtml}
         <div style="line-height: 1.8; font-size: 1.1rem; margin-top: 25px;" class="post-content-html">${post.content}</div>
-        ${galleryGridHtml}
     `;
     
     modal.classList.add('active');
